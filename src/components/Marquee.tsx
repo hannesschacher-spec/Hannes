@@ -1,12 +1,12 @@
 const ITEMS = [
-  "Lead-Qualifizierung",
-  "Terminplanung am Telefon",
-  "E-Mail & LinkedIn Outreach",
+  "Angebotsnachfassen",
+  "E-Mail-Automatisierung",
   "CRM-Integration",
+  "Terminbuchung bei eingehenden Anrufen",
+  "Double-Opt-In",
   "Kalender-Sync in Echtzeit",
-  "Mehrsprachige Agenten",
-  "24/7 Erreichbarkeit",
   "DSGVO-konform",
+  "EU-Serverstandort",
 ];
 
 export default function Marquee() {

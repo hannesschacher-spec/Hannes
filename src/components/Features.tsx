@@ -6,7 +6,7 @@ const FEATURES = [
   {
     icon: Clock,
     title: "24/7 Verfügbarkeit",
-    description: "Ihre Agenten schlafen nie. Leads werden sofort angesprochen, Anrufe jederzeit entgegengenommen.",
+    description: "Die Automatisierung schläft nie. Offene Angebote werden zuverlässig nachgefasst, eingehende Anrufe jederzeit entgegengenommen.",
   },
   {
     icon: MessagesSquare,

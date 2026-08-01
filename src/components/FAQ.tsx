@@ -10,7 +10,7 @@ const FAQS = [
   },
   {
     q: "Ersetzt der Agent mein Vertriebsteam?",
-    a: "Nein. Der Agent übernimmt zeitintensive, repetitive Aufgaben wie Erstansprache und Terminplanung, damit sich Ihr Team auf Abschlüsse und Beziehungen konzentrieren kann.",
+    a: "Nein. Das System übernimmt zeitintensive, wiederkehrende Aufgaben wie das Nachfassen offener Angebote und die Terminvereinbarung bei eingehenden Anrufen, damit sich Ihr Team auf Abschlüsse und Beziehungen konzentrieren kann.",
   },
   {
     q: "Kann der Telefonagent auf Deutsch sprechen?",

@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { ArrowRight, Phone, Sparkles, TrendingUp } from "lucide-react";
 import { useEffect, useState } from "react";
 
-const ROTATING_WORDS = ["Vertrieb", "Terminplanung", "Kundenakquise", "Kaltakquise"];
+const ROTATING_WORDS = ["Vertrieb", "Terminplanung", "Angebotsnachfassen", "Kundenkommunikation"];
 
 function useRotatingWord() {
   const [index, setIndex] = useState(0);
@@ -57,8 +57,9 @@ export default function Hero() {
           transition={{ duration: 0.6, delay: 0.2 }}
           className="mx-auto mt-6 max-w-2xl text-balance text-lg text-white/60"
         >
-          NeuralSales baut KI-Agenten, die Leads qualifizieren, Kunden ansprechen und
-          Termine direkt am Telefon buchen — rund um die Uhr, ohne zusätzliches Personal.
+          NeuralSales automatisiert das Nachfassen offener Angebote, den Betrieb von
+          E-Mail-Strecken auf Basis bestehender Empfängerlisten und die Terminvereinbarung
+          bei eingehenden Anrufen — auf Basis Ihrer laufenden Vorgänge und Bestandskontakte.
         </motion.p>
 
         <motion.div
@@ -89,9 +90,9 @@ export default function Hero() {
           className="mx-auto mt-20 grid max-w-3xl grid-cols-1 gap-4 sm:grid-cols-3"
         >
           {[
-            { icon: TrendingUp, label: "Mehr qualifizierte Leads", sub: "durch automatisierte Ansprache" },
-            { icon: Phone, label: "Telefonate rund um die Uhr", sub: "für Terminvereinbarungen" },
-            { icon: Sparkles, label: "Sofort einsatzbereit", sub: "trainiert auf Ihre Prozesse" },
+            { icon: TrendingUp, label: "Angebote zuverlässig nachgefasst", sub: "ohne zusätzlichen Aufwand im Innendienst" },
+            { icon: Phone, label: "Eingehende Anrufe jederzeit angenommen", sub: "auch außerhalb der Geschäftszeiten" },
+            { icon: Sparkles, label: "Individuell auf Ihre Prozesse trainiert", sub: "und an Ihre bestehenden Systeme angebunden" },
           ].map((item, i) => (
             <div key={i} className="glass glow-border relative rounded-2xl p-5 text-left">
               <item.icon className="mb-3 h-5 w-5 text-cyan-glow" />

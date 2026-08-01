@@ -10,12 +10,12 @@ const STEPS = [
   {
     icon: Cable,
     title: "Training & Integration",
-    description: "Der Agent wird auf Ihre Daten, Ihren Tonfall trainiert und an CRM, Kalender und Telefonie angebunden.",
+    description: "Das System wird auf Ihre Daten und Ihren Tonfall trainiert und an CRM, Kalender und Telefonie angebunden.",
   },
   {
     icon: Rocket,
     title: "Go-Live",
-    description: "Ihr Agent geht live — qualifiziert Leads, führt Gespräche und bucht Termine vollautomatisch.",
+    description: "Die Automatisierung geht live — fasst Angebote nach, führt E-Mail-Strecken fort und nimmt eingehende Anrufe entgegen.",
   },
   {
     icon: LineChart,

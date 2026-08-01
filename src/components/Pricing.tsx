@@ -6,14 +6,14 @@ const TIERS = [
   {
     name: "Starter",
     description: "Für Teams, die mit einem KI-Agenten starten möchten.",
-    features: ["Ein Agent nach Wahl", "Anbindung an ein System (CRM oder Kalender)", "Standard-Trainingsumfang", "E-Mail-Support"],
+    features: ["Eine Leistung nach Wahl", "Anbindung an ein System (CRM oder Kalender)", "Standard-Trainingsumfang", "E-Mail-Support"],
     highlighted: false,
   },
   {
     name: "Professional",
     description: "Für wachsende Vertriebsteams mit mehreren Kanälen.",
     features: [
-      "Sales-Agent & Telefonagent kombiniert",
+      "Zwei Leistungen Ihrer Wahl kombiniert",
       "Vollständige CRM- & Kalender-Integration",
       "Individuelles Training auf Ihre Prozesse",
       "Laufende Optimierung & Reporting",
