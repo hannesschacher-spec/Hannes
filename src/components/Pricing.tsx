@@ -6,12 +6,16 @@ const TIERS = [
   {
     name: "Starter",
     description: "Für Teams, die mit einem KI-Agenten starten möchten.",
+    monthly: "149 €",
+    setup: "690 € einmalige Einrichtung",
     features: ["Eine Leistung nach Wahl", "Anbindung an ein System (CRM oder Kalender)", "Standard-Trainingsumfang", "E-Mail-Support"],
     highlighted: false,
   },
   {
     name: "Professional",
     description: "Für wachsende Vertriebsteams mit mehreren Kanälen.",
+    monthly: "349 €",
+    setup: "1.690 € einmalige Einrichtung",
     features: [
       "Zwei Leistungen Ihrer Wahl kombiniert",
       "Vollständige CRM- & Kalender-Integration",
@@ -24,6 +28,8 @@ const TIERS = [
   {
     name: "Enterprise",
     description: "Für Unternehmen mit komplexen Anforderungen.",
+    monthly: null,
+    setup: null,
     features: [
       "Beliebig viele Agenten & Kanäle",
       "Individuelle Systemintegrationen",
@@ -68,9 +74,19 @@ export default function Pricing() {
                 <h3 className="font-display text-xl font-semibold text-white">{tier.name}</h3>
                 <p className="mt-2 text-sm text-white/55">{tier.description}</p>
 
-                <p className="mt-6 font-display text-2xl font-semibold text-white">
-                  Preis auf Anfrage
-                </p>
+                <div className="mt-6">
+                  {tier.monthly ? (
+                    <>
+                      <p className="font-display text-2xl font-semibold text-white">
+                        {tier.monthly}
+                        <span className="text-sm font-normal text-white/50"> / Monat</span>
+                      </p>
+                      <p className="mt-1 text-xs text-white/50">zzgl. {tier.setup}</p>
+                    </>
+                  ) : (
+                    <p className="font-display text-2xl font-semibold text-white">Preis auf Anfrage</p>
+                  )}
+                </div>
 
                 <ul className="mt-6 flex-1 space-y-3">
                   {tier.features.map((feature) => (
@@ -95,6 +111,11 @@ export default function Pricing() {
             </Reveal>
           ))}
         </div>
+
+        <p className="mt-8 text-center text-xs text-white/50">
+          Alle Preise netto zzgl. gesetzlicher Umsatzsteuer. Bei hohem Nutzungsvolumen können
+          zusätzliche Kosten anfallen, die vorab mit Ihnen abgestimmt werden.
+        </p>
       </div>
     </section>
   );
