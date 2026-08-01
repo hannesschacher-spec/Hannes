@@ -111,6 +111,22 @@ export default function Contact() {
                       className="w-full resize-none rounded-xl border border-line bg-surface-2/80 px-4 py-3 text-sm text-white placeholder:text-white/30 outline-none focus:border-violet-glow/60 focus:ring-2 focus:ring-violet-glow/20"
                     />
                   </div>
+                  <label className="flex items-start gap-3 text-xs text-white/60">
+                    <input
+                      required
+                      type="checkbox"
+                      name="datenschutz_zustimmung"
+                      className="mt-0.5 h-4 w-4 shrink-0 rounded border border-line bg-surface-2/80 accent-violet-glow"
+                    />
+                    <span>
+                      Ich habe die{" "}
+                      <a href="/datenschutz/" className="text-cyan-glow hover:underline">
+                        Datenschutzerklärung
+                      </a>{" "}
+                      zur Kenntnis genommen und bin mit der Verarbeitung meiner Angaben zur
+                      Bearbeitung meiner Anfrage einverstanden.
+                    </span>
+                  </label>
                   {error && (
                     <div className="flex items-center gap-2 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
                       <AlertCircle className="h-4 w-4 shrink-0" />

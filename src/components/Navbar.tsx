@@ -3,11 +3,11 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Menu, X, Zap } from "lucide-react";
 
 const LINKS = [
-  { href: "#services", label: "Lösungen" },
-  { href: "#process", label: "Ablauf" },
-  { href: "#features", label: "Vorteile" },
-  { href: "#pricing", label: "Preise" },
-  { href: "#faq", label: "FAQ" },
+  { href: "/#services", label: "Lösungen" },
+  { href: "/#process", label: "Ablauf" },
+  { href: "/#features", label: "Vorteile" },
+  { href: "/#pricing", label: "Preise" },
+  { href: "/#faq", label: "FAQ" },
 ];
 
 export default function Navbar() {
@@ -28,7 +28,7 @@ export default function Navbar() {
       }`}
     >
       <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-8">
-        <a href="#top" className="flex items-center gap-2 font-display text-lg font-semibold tracking-tight text-white">
+        <a href="/" className="flex items-center gap-2 font-display text-lg font-semibold tracking-tight text-white">
           <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-violet-glow to-cyan-glow">
             <Zap className="h-4.5 w-4.5 text-ink" strokeWidth={2.5} />
           </span>
@@ -49,13 +49,13 @@ export default function Navbar() {
 
         <div className="hidden items-center gap-3 lg:flex">
           <a
-            href="#contact"
+            href="/#contact"
             className="rounded-full bg-white/5 px-4 py-2 text-sm font-medium text-white/90 ring-1 ring-white/10 transition hover:bg-white/10"
           >
             Kontakt
           </a>
           <a
-            href="#contact"
+            href="/#contact"
             className="group relative overflow-hidden rounded-full bg-gradient-to-r from-violet-glow to-cyan-glow px-5 py-2 text-sm font-semibold text-ink transition-transform hover:scale-[1.03]"
           >
             Demo anfragen
@@ -92,7 +92,7 @@ export default function Navbar() {
                 </a>
               ))}
               <a
-                href="#contact"
+                href="/#contact"
                 onClick={() => setOpen(false)}
                 className="mt-2 rounded-full bg-gradient-to-r from-violet-glow to-cyan-glow px-4 py-3 text-center text-sm font-semibold text-ink"
               >

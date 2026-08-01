@@ -4,18 +4,18 @@ const COLUMNS = [
   {
     title: "Produkt",
     links: [
-      { label: "Sales & Marketing Agenten", href: "#services" },
-      { label: "Telefonagenten", href: "#services" },
-      { label: "Ablauf", href: "#process" },
-      { label: "Preise", href: "#pricing" },
+      { label: "Angebotsnachfassen", href: "/#services" },
+      { label: "Newsletter-Automatisierung", href: "/#services" },
+      { label: "Ablauf", href: "/#process" },
+      { label: "Preise", href: "/#pricing" },
     ],
   },
   {
     title: "Unternehmen",
     links: [
-      { label: "Vorteile", href: "#features" },
-      { label: "FAQ", href: "#faq" },
-      { label: "Kontakt", href: "#contact" },
+      { label: "Vorteile", href: "/#features" },
+      { label: "FAQ", href: "/#faq" },
+      { label: "Kontakt", href: "/#contact" },
     ],
   },
 ];
@@ -26,15 +26,16 @@ export default function Footer() {
       <div className="mx-auto max-w-7xl">
         <div className="grid gap-12 lg:grid-cols-[2fr_1fr_1fr]">
           <div>
-            <a href="#top" className="flex items-center gap-2 font-display text-lg font-semibold text-white">
+            <a href="/" className="flex items-center gap-2 font-display text-lg font-semibold text-white">
               <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-violet-glow to-cyan-glow">
                 <Zap className="h-4.5 w-4.5 text-ink" strokeWidth={2.5} />
               </span>
               Neural<span className="text-gradient">Sales</span>
             </a>
             <p className="mt-4 max-w-sm text-sm text-white/50">
-              KI-Agenten für Vertrieb, Marketing und Telefonie. Wir automatisieren Kundenansprache und
-              Terminplanung, damit sich Ihr Team auf das Wesentliche konzentrieren kann.
+              Automatisierung für Vertrieb und Marketing: Angebotsnachfassen, E-Mail-Strecken
+              auf Basis bestehender Empfängerlisten und Terminvereinbarung bei eingehenden
+              Anrufen.
             </p>
           </div>
 
@@ -57,8 +58,8 @@ export default function Footer() {
         <div className="mt-14 flex flex-col items-center justify-between gap-4 border-t border-line/70 pt-8 text-xs text-white/40 sm:flex-row">
           <p>© {new Date().getFullYear()} NeuralSales. Alle Rechte vorbehalten.</p>
           <div className="flex gap-6">
-            <a href="#top" className="hover:text-white/70">Impressum</a>
-            <a href="#top" className="hover:text-white/70">Datenschutz</a>
+            <a href="/impressum/" className="hover:text-white/70">Impressum</a>
+            <a href="/datenschutz/" className="hover:text-white/70">Datenschutz</a>
           </div>
         </div>
       </div>
