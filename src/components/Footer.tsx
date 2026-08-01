@@ -55,7 +55,7 @@ export default function Footer() {
           ))}
         </div>
 
-        <div className="mt-14 flex flex-col items-center justify-between gap-4 border-t border-line/70 pt-8 text-xs text-white/40 sm:flex-row">
+        <div className="mt-14 flex flex-col items-center justify-between gap-4 border-t border-line/70 pt-8 text-xs text-white/50 sm:flex-row">
           <p>© {new Date().getFullYear()} NeuralSales. Alle Rechte vorbehalten.</p>
           <div className="flex gap-6">
             <a href="/impressum/" className="hover:text-white/70">Impressum</a>

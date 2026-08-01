@@ -69,14 +69,14 @@ export default function Hero() {
           className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row"
         >
           <a
-            href="#contact"
+            href="/#contact"
             className="group flex items-center gap-2 rounded-full bg-gradient-to-r from-violet-glow to-cyan-glow px-7 py-3.5 text-sm font-semibold text-ink shadow-[0_0_40px_-8px_rgba(139,92,246,0.6)] transition-transform hover:scale-[1.04]"
           >
             Kostenlose Demo anfragen
             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
           </a>
           <a
-            href="#services"
+            href="/#services"
             className="glass flex items-center gap-2 rounded-full px-7 py-3.5 text-sm font-medium text-white/90 transition hover:bg-white/10"
           >
             Lösungen entdecken

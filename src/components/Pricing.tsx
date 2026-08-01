@@ -82,7 +82,7 @@ export default function Pricing() {
                 </ul>
 
                 <a
-                  href="#contact"
+                  href="/#contact"
                   className={`mt-8 rounded-full px-5 py-3 text-center text-sm font-semibold transition ${
                     tier.highlighted
                       ? "bg-gradient-to-r from-violet-glow to-cyan-glow text-ink hover:scale-[1.02]"
