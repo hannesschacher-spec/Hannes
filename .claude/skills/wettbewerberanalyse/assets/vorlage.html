@@ -1,0 +1,852 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Wettbewerbsanalyse Instron</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Semi+Condensed:wght@500;600&display=swap">
+<style>
+/* Layout: ZwickRoell Look auf Weiß wie die Homepage. Kopfleiste oben, Inhaltsverzeichnis am Anfang, links eine mitlaufende Navigation ab 1100 px, eckige Formen, Rot nur als Akzent. Grautöne nach RAL 7021 (Schwarzgrau der Lastrahmen). */
+:root{
+  --bg:#ffffff;
+  --surface:#f4f5f5;
+  --surface-2:#e8eaeb;
+  --line:#d9dcde;
+  --fg:#1a1a1a;
+  --muted:#5c6366;
+  --red:#DF1E27;
+  --red-text:#C8161F;
+  --good:#2e8b57;
+  /* Markenfarben für Vergleichstabellen: ZwickRoell Rot, Wettbewerber Instron Dunkelblau #1E1933 (Sekundärfarbe, weil das Instron Rot #C10331 dem ZwickRoell Rot zu ähnlich ist) */
+  --zr:#DF1E27;
+  --wb:#1E1933;
+  --head:#2e3234;
+  --font:"Barlow","DIN Next","Helvetica Neue",Helvetica,Arial,sans-serif;
+  --font-label:"Barlow Semi Condensed","Barlow","Helvetica Neue",Arial,sans-serif;
+  --head-h:56px;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font);font-size:17px;line-height:1.6;-webkit-font-smoothing:antialiased}
+a{color:var(--red-text);text-decoration:none}
+a:hover{text-decoration:underline}
+a:focus-visible,button:focus-visible{outline:2px solid var(--red);outline-offset:2px}
+
+/* Kopfleiste */
+.topbar{position:sticky;top:0;z-index:20;background:#ffffff;box-shadow:0 1px 0 var(--line);border-bottom:3px solid var(--red);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.topbar-in{max-width:1320px;margin:0 auto;height:var(--head-h);display:flex;align-items:center;justify-content:space-between;gap:16px}
+.brand{display:flex;align-items:center;gap:14px;color:var(--fg);font-weight:700;font-size:22px;letter-spacing:.2px}
+.brand:hover{text-decoration:none}
+.brand .sq{width:14px;height:14px;background:var(--red);display:inline-block}
+.brand small{font-family:var(--font-label);font-weight:500;font-size:14px;color:var(--muted);letter-spacing:.6px;text-transform:uppercase}
+.badge{font-family:var(--font-label);font-size:13px;text-transform:uppercase;letter-spacing:1px;border:1px solid var(--red);color:var(--red-text);padding:3px 10px;white-space:nowrap}
+
+/* Titelbereich */
+.hero{background:var(--surface);border-bottom:1px solid var(--line);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.hero-in{max-width:1320px;margin:0 auto;padding-block:48px 40px;display:grid;gap:24px}
+.eyebrow{font-family:var(--font-label);text-transform:uppercase;letter-spacing:1.4px;font-size:14px;color:var(--red-text);font-weight:600}
+h1{font-size:clamp(34px,5vw,54px);line-height:1.08;margin:0;font-weight:600;text-wrap:balance}
+.lead{font-size:20px;color:var(--fg);max-width:62ch;margin:0}
+.facts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);max-width:900px}
+.fact{background:#ffffff;padding:16px 18px}
+.fact b{display:block;font-size:28px;font-weight:600;font-variant-numeric:tabular-nums;line-height:1.1}
+.fact span{font-family:var(--font-label);font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px}
+.meta{font-size:14px;color:var(--muted)}
+
+/* Hauptlayout */
+.wrap{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.layout{max-width:1320px;margin:0 auto;display:grid;grid-template-columns:260px minmax(0,1fr);gap:48px;padding-block:40px 80px}
+.sidenav{position:sticky;top:calc(var(--head-h) + 24px);align-self:start;max-height:calc(100vh - var(--head-h) - 48px);overflow:auto;border-left:1px solid var(--line)}
+.sidenav p{font-family:var(--font-label);text-transform:uppercase;letter-spacing:1px;font-size:13px;color:var(--muted);margin:0 0 8px 16px}
+.sidenav a{display:block;padding:6px 12px 6px 16px;color:var(--muted);font-size:15px;line-height:1.35;border-left:3px solid transparent;margin-left:-2px}
+.sidenav a:hover{color:var(--fg);text-decoration:none}
+.sidenav a.active{color:var(--fg);border-left-color:var(--red);background:var(--surface)}
+.sidenav a.sub{padding-left:30px;font-size:14px}
+main{min-width:0}
+@media (max-width:1100px){.layout{grid-template-columns:minmax(0,1fr)}.sidenav{display:none}}
+
+/* Inhaltsverzeichnis */
+.toc{background:#ffffff;border:1px solid var(--line);border-top:3px solid var(--red);padding:24px 28px;margin-bottom:56px}
+.toc h2{margin:0 0 16px;font-size:24px;border:0;padding:0}
+.toc ol{margin:0;padding:0;list-style:none;columns:2;column-gap:40px}
+.toc li{break-inside:avoid;padding:5px 0;border-bottom:1px solid var(--line)}
+.toc li a{color:var(--fg);display:flex;gap:12px;align-items:baseline}
+.toc li a:hover{color:var(--red-text);text-decoration:none}
+.toc .n{font-family:var(--font-label);color:var(--red-text);font-weight:600;min-width:28px;font-variant-numeric:tabular-nums}
+.toc ul{list-style:none;margin:4px 0 2px 40px;padding:0}
+.toc ul li{border:0;padding:2px 0;font-size:15px}
+.toc ul a{color:var(--muted)}
+.toc .new{font-family:var(--font-label);font-size:11px;text-transform:uppercase;letter-spacing:1px;background:var(--red);color:#fff;padding:1px 6px;margin-left:8px;align-self:center}
+@media (max-width:760px){.toc ol{columns:1}.toc{padding:20px 18px}}
+
+/* Abschnitte */
+section{scroll-margin-top:calc(var(--head-h) + 20px);margin-bottom:64px}
+h3[id]{scroll-margin-top:calc(var(--head-h) + 20px)}
+h2{font-size:clamp(26px,3vw,34px);line-height:1.15;font-weight:600;margin:0 0 18px;padding-bottom:12px;border-bottom:1px solid var(--line);text-wrap:balance;display:flex;gap:14px;align-items:baseline}
+h2 .num{font-family:var(--font-label);font-size:.6em;color:var(--red-text);font-weight:600;font-variant-numeric:tabular-nums}
+h3{font-size:21px;font-weight:600;margin:36px 0 12px;text-wrap:balance}
+h4{font-family:var(--font-label);text-transform:uppercase;letter-spacing:1px;font-size:14px;color:var(--muted);margin:24px 0 8px;font-weight:600}
+p{margin:0 0 14px;max-width:72ch}
+.point{font-size:19px;color:var(--fg);max-width:70ch}
+ul.list,ol.list{margin:0 0 16px;padding-left:22px;max-width:76ch}
+ul.list li,ol.list li{margin-bottom:6px}
+ul.list li::marker{color:var(--red)}
+.src{font-size:14px;color:var(--muted);margin-top:14px}
+.src a{color:var(--muted);text-decoration:underline;text-decoration-color:var(--line)}
+.src a:hover{color:var(--fg)}
+
+/* Tabellen */
+.tbl{overflow-x:auto;margin:8px 0 18px;border:1px solid var(--line)}
+table{border-collapse:collapse;width:100%;font-size:15px;line-height:1.45;min-width:640px}
+thead th{background:var(--head);color:#ffffff;font-family:var(--font-label);text-transform:uppercase;letter-spacing:.7px;font-size:13px;font-weight:600;text-align:left;padding:10px 12px;border-bottom:2px solid var(--red);vertical-align:bottom}
+tbody td,tbody th{padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top;text-align:left}
+tbody th{font-weight:600;color:var(--fg)}
+tbody tr:nth-child(even){background:rgba(0,0,0,.025)}
+td.num,th.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+.zr{color:var(--fg);font-weight:600}
+.win{display:inline-block;font-family:var(--font-label);font-size:12px;text-transform:uppercase;letter-spacing:.8px;padding:1px 7px;border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+.win.z{border-color:var(--red);color:var(--red-text)}
+.win.i{border-color:var(--wb);color:var(--wb)}
+table.compact{min-width:0}
+/* Spalten in Markenfarbe: das Skript markiert jede Spalte, deren Kopf "ZwickRoell" oder den Wettbewerber nennt */
+thead th.col-zr{background:var(--zr);color:#fff;border-bottom-color:var(--zr)}
+thead th.col-wb{background:var(--wb);color:#fff;border-bottom-color:var(--wb)}
+tbody td.col-zr{background:color-mix(in srgb,var(--zr) 6%,#fff);border-left:3px solid var(--zr)}
+tbody td.col-wb{background:color-mix(in srgb,var(--wb) 6%,#fff);border-left:3px solid var(--wb)}
+.cell.hl{border-top:3px solid var(--zr)}
+.cell.wb{border-top:3px solid var(--wb)}
+.cell.wb h4{color:var(--wb)}
+
+/* Hinweisboxen */
+.note{border-left:4px solid var(--red);background:var(--surface);padding:16px 20px;margin:18px 0;max-width:80ch}
+.note b{color:var(--fg)}
+.note.rule{border-left-color:var(--good)}
+.note .tag{font-family:var(--font-label);text-transform:uppercase;letter-spacing:1px;font-size:12px;color:var(--muted);display:block;margin-bottom:4px}
+
+/* Zweispaltige Karten (SWOT, gewinnen) */
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);margin:12px 0 20px}
+.cell{background:var(--surface);padding:18px 20px;min-width:0}
+.cell h4{margin-top:0;color:var(--fg)}
+.cell.hl h4{color:var(--red-text)}
+.cell ul{margin:0;padding-left:20px}
+.cell li{margin-bottom:6px;font-size:16px}
+.cell li::marker{color:var(--red)}
+@media (max-width:760px){.grid2{grid-template-columns:minmax(0,1fr)}.facts{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* Bewertungsbalken */
+.score{width:100%;border:1px solid var(--line)}
+.score-row{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr) minmax(0,1fr) 120px;gap:12px;align-items:center;padding:9px 12px;border-bottom:1px solid var(--line);font-size:15px}
+.score-row:last-child{border-bottom:0}
+.score-head{background:var(--head);color:#ffffff;font-family:var(--font-label);text-transform:uppercase;letter-spacing:.7px;font-size:13px;border-bottom:2px solid var(--red)}
+.bar{display:flex;gap:3px}
+.bar i{flex:1;height:10px;background:var(--surface-2);border:1px solid var(--line)}
+.bar.zr i.on{background:var(--red);border-color:var(--red)}
+.bar.in i.on{background:var(--wb);border-color:var(--wb)}
+.score-row .v{font-variant-numeric:tabular-nums;font-size:13px;color:var(--muted);margin-left:8px}
+.cellbar{display:flex;align-items:center}
+@media (max-width:640px){.score-row{grid-template-columns:minmax(0,1fr) minmax(0,1fr);}.score-row .lbl{grid-column:1/-1;font-weight:600}.score-row .adv{grid-column:1/-1}.score-head{display:none}}
+.legend{display:flex;gap:20px;font-size:14px;color:var(--muted);margin:10px 0}
+.legend span::before{content:"";display:inline-block;width:12px;height:12px;margin-right:6px;vertical-align:-1px}
+.legend .lz::before{background:var(--red)}
+.legend .li::before{background:var(--wb)}
+
+/* Gesprächsleitfaden */
+.say{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.6fr);gap:1px;background:var(--line);border:1px solid var(--line);margin:10px 0 20px}
+.say>div{background:var(--surface);padding:14px 18px;min-width:0}
+.say .q{font-style:italic;color:#333a3d}
+.say .q::before{content:"Kunde: ";font-style:normal;font-family:var(--font-label);text-transform:uppercase;font-size:12px;letter-spacing:1px;color:var(--muted)}
+.say .a::before{content:"ZwickRoell: ";font-family:var(--font-label);text-transform:uppercase;font-size:12px;letter-spacing:1px;color:var(--red-text)}
+@media (max-width:760px){.say{grid-template-columns:minmax(0,1fr)}}
+
+.totop{display:inline-block;font-family:var(--font-label);font-size:13px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-top:4px}
+footer{border-top:1px solid var(--line);color:var(--muted);font-size:14px;padding-block:28px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+footer div{max-width:1320px;margin:0 auto}
+</style>
+</head>
+<body data-wettbewerber="Instron">
+
+<header class="topbar">
+  <div class="topbar-in">
+    <a class="brand" href="#top"><span class="sq" aria-hidden="true"></span>ZwickRoell <small>Wettbewerbsanalyse</small></a>
+    <span class="badge">Nur für den internen Gebrauch</span>
+  </div>
+</header>
+
+<div class="hero" id="top">
+  <div class="hero-in">
+    <div class="eyebrow">Marktbeobachtung · Stand Oktober 2026</div>
+    <h1>Wettbewerbsanalyse Instron</h1>
+    <p class="lead">Instron ist der stärkste direkte Wettbewerber von ZwickRoell in der statischen Werkstoffprüfung. Diese Analyse zeigt, wo Instron steht, wo ZwickRoell überzeugt und wie wir das im Kundengespräch positiv vermitteln.</p>
+    <div class="facts">
+      <div class="fact"><b>1946</b><span>Gründung Instron</span></div>
+      <div class="fact"><b>2005</b><span>Teil von ITW</span></div>
+      <div class="fact"><b>1.500+</b><span>Mitarbeiter Instron</span></div>
+      <div class="fact"><b>50.000+</b><span>Instron Systeme installiert</span></div>
+    </div>
+    <div class="meta">Grundlage: öffentliche Quellen, Datenblätter beider Hersteller, Recherche vom 19. Oktober 2026.</div>
+  </div>
+</div>
+
+<div class="wrap">
+<div class="layout">
+
+<nav class="sidenav" aria-label="Abschnitte">
+  <p>Inhalt</p>
+  <a href="#kurzfassung">1 Kurzfassung</a>
+  <a href="#profil">2 Unternehmensprofil</a>
+  <a href="#portfolio">3 Produktportfolio</a>
+  <a href="#statisch">4 Statische Prüfmaschinen</a>
+  <a class="sub" href="#statisch-baureihen">Baureihen</a>
+  <a class="sub" href="#statisch-daten">Technische Daten</a>
+  <a class="sub" href="#statisch-technik">Antrieb, Rahmen, Elektronik</a>
+  <a class="sub" href="#statisch-kraft">Kraftmessung</a>
+  <a class="sub" href="#statisch-ext">Extensometer</a>
+  <a class="sub" href="#statisch-argumente">Argumentation</a>
+  <a href="#software">5 Software</a>
+  <a href="#branchen">6 Branchen</a>
+  <a href="#regionen">7 Regionen und Vertrieb</a>
+  <a href="#service">8 Preis und Service</a>
+  <a href="#marketing">9 Marketing</a>
+  <a href="#innovation">10 Neuheiten</a>
+  <a href="#vergleich">11 Direkter Vergleich</a>
+  <a href="#swot">12 SWOT</a>
+  <a href="#leitfaden">13 Gesprächsleitfaden</a>
+  <a href="#empfehlungen">14 Empfehlungen</a>
+  <a href="#quellen">15 Quellen</a>
+</nav>
+
+<main>
+
+<nav class="toc" aria-label="Inhaltsverzeichnis">
+  <h2>Inhaltsverzeichnis</h2>
+  <ol>
+    <li><a href="#kurzfassung"><span class="n">1</span>Kurzfassung</a></li>
+    <li><a href="#profil"><span class="n">2</span>Unternehmensprofil</a></li>
+    <li><a href="#portfolio"><span class="n">3</span>Produktportfolio</a></li>
+    <li><a href="#statisch"><span class="n">4</span>Statische Prüfmaschinen im Detail<span class="new">neu</span></a>
+      <ul>
+        <li><a href="#statisch-baureihen">4.1 Baureihen im Überblick</a></li>
+        <li><a href="#statisch-daten">4.2 Technische Daten im Vergleich</a></li>
+        <li><a href="#statisch-technik">4.3 Antrieb, Rahmen und Elektronik</a></li>
+        <li><a href="#statisch-kraft">4.4 Kraftmessung</a></li>
+        <li><a href="#statisch-ext">4.5 Extensometer</a></li>
+        <li><a href="#statisch-argumente">4.6 Argumentation für ZwickRoell</a></li>
+      </ul>
+    </li>
+    <li><a href="#software"><span class="n">5</span>Software und Digitalisierung</a></li>
+    <li><a href="#branchen"><span class="n">6</span>Branchen und Anwendungen</a></li>
+    <li><a href="#regionen"><span class="n">7</span>Regionale Präsenz und Vertrieb</a></li>
+    <li><a href="#service"><span class="n">8</span>Preis- und Servicestrategie</a></li>
+    <li><a href="#marketing"><span class="n">9</span>Marketing und Markenauftritt</a></li>
+    <li><a href="#innovation"><span class="n">10</span>Neuheiten seit 2025</a></li>
+    <li><a href="#vergleich"><span class="n">11</span>Direkter Vergleich</a></li>
+    <li><a href="#swot"><span class="n">12</span>SWOT Analyse Instron</a></li>
+    <li><a href="#leitfaden"><span class="n">13</span>Gesprächsleitfaden für den Vertrieb</a></li>
+    <li><a href="#empfehlungen"><span class="n">14</span>Handlungsempfehlungen</a></li>
+    <li><a href="#quellen"><span class="n">15</span>Quellen und Datenlage</a></li>
+  </ol>
+</nav>
+
+<div class="note rule">
+  <span class="tag">Leitlinie für alle Argumente</span>
+  <b>Wir sprechen über unsere Stärken, nicht über Schwächen anderer.</b> ZwickRoell äußert sich gegenüber Kunden nie abwertend über Wettbewerber. Alle Argumente in dieser Analyse sind deshalb so formuliert, dass sie den Nutzen von ZwickRoell zeigen. Die Abschnitte zu Instron dienen nur dem internen Verständnis.
+</div>
+
+<!-- 1 -->
+<section id="kurzfassung">
+  <h2><span class="num">01</span>Kurzfassung</h2>
+  <p class="point">Instron ist bei Standardmaschinen gleich stark, führt in Nordamerika, bei elektrodynamischer Ermüdung und bei der einfachen Bedienung. ZwickRoell überzeugt mit Portfoliobreite, Software-Tiefe, KI, höheren Geschwindigkeiten bei großen Kräften und der feinsten Dehnungsmessung.</p>
+  <ul class="list">
+    <li><b>Eigentümer:</b> Instron gehört seit Oktober 2005 zum US-Konzern ITW. Das Segment Test &amp; Measurement and Electronics setzte 2025 2.825 Mio. US$ um und wuchs organisch nicht.</li>
+    <li><b>Wichtigstes neues Verkaufsargument von Instron:</b> Seit Juni 2025 gibt es 10 Jahre Garantie auf die Mechanik von 3400 und 6800 Maschinen.</li>
+    <li><b>Instron stärkt Felder, in denen ZwickRoell zu Hause ist:</b> AT3 für automatisierte Metallprüfung bis 300 kN, 100 kN Tischmodell, AVE3 Videoextensometer, Bluehill Central 2.</li>
+    <li><b>Statische Maschinen:</b> Die AllroundLine Z100 fährt bis 1.500 mm/min und hält die Geschwindigkeit auf 0,05 % genau. Der makroXtens II HP löst bis 0,006 µm auf und ist mit über 7.500 Systemen ein Industriestandard.</li>
+    <li><b>Sofort handeln:</b> Antwort auf das Garantieargument, Besitzer der auslaufenden Instron 3300 Serie ansprechen, KI und Komplettangebot sichtbar machen.</li>
+  </ul>
+</section>
+
+<!-- 2 -->
+<section id="profil">
+  <h2><span class="num">02</span>Unternehmensprofil</h2>
+  <p class="point">Instron ist eine Division des börsennotierten Konzerns Illinois Tool Works (ITW). ZwickRoell ist inhabergeführt. Das prägt Tempo, Flexibilität und Entscheidungswege beider Unternehmen.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Merkmal</th><th>Instron</th><th>ZwickRoell</th></tr></thead>
+    <tbody>
+      <tr><th>Gründung</th><td>1946, Massachusetts (USA)</td><td>Ursprung 1854 in Einsingen, Prüfmaschinen seit 1937</td></tr>
+      <tr><th>Eigentümer</th><td>ITW (NYSE), seit Oktober 2005</td><td>Familienunternehmen</td></tr>
+      <tr><th>Hauptsitz</th><td>Norwood, Massachusetts</td><td>Ulm-Einsingen</td></tr>
+      <tr><th>Wichtige Standorte</th><td>Norwood (USA), High Wycombe (UK), Darmstadt (Strukturprüfung), Pianezza (Italien, CEAST), Bengaluru, Tokio, Shanghai</td><td>Ulm mit über 1.200 Mitarbeitern, Gesellschaften in über 50 Ländern</td></tr>
+      <tr><th>Mitarbeiter</th><td class="num">über 1.500 (Instron Broschüre 2025)</td><td class="num">über 1.800, davon 347 in Vertrieb und Service</td></tr>
+      <tr><th>Umsatz</th><td>nicht veröffentlicht</td><td class="num">rund 311 Mio. € (2025)</td></tr>
+      <tr><th>Installierte Basis</th><td>über 50.000 Systeme; über 30.000 werden jährlich gewartet</td><td>z.B. über 7.500 makroXtens II allein bei Extensometern</td></tr>
+      <tr><th>Konzernsegment</th><td>ITW Test &amp; Measurement and Electronics: 2.825 Mio. US$, 24,6 % operative Marge (2025)</td><td>entfällt</td></tr>
+    </tbody>
+  </table></div>
+  <h4>Geschichte in Stichpunkten</h4>
+  <ul class="list">
+    <li>1946: Harold Hindman und George Burr gründen Instron. Auslöser war ihre Arbeit am MIT an Seidenersatz für Fallschirme.</li>
+    <li>1960: Gründung von Instron Limited in High Wycombe (UK), bis heute das europäische Zentrum.</li>
+    <li>1993: Übernahme der Härteprüfmarken Wilson und Wolpert. Beide gehören seit 2012 zur ITW Schwester Buehler.</li>
+    <li>1999: Kirtland Capital Partners übernimmt Instron und nimmt es von der Börse.</li>
+    <li>2005: ITW kauft Instron (angekündigt am 30. September 2005).</li>
+    <li>2008/2009: Übernahme von CEAST (Pianezza, Italien), Spezialist für Kunststoffprüfung.</li>
+    <li>2014: Instron Deutschland und Instron Structural Testing Systems werden zur Instron GmbH in Darmstadt (rund 130 Mitarbeiter).</li>
+    <li>2026: 80 Jahre Instron; laut Instron nutzen 96 % der Fortune-100-Hersteller seine Systeme.</li>
+  </ul>
+  <h4>Was ITW für den Wettbewerb bedeutet</h4>
+  <ul class="list">
+    <li>ITW steuert nach dem 80/20-Prinzip: Fokus auf die umsatzstärksten Kunden und Produkte, Standardisierung des Rests.</li>
+    <li>Das Segment wuchs 2025 nur um 0,2 %, organisch war es rückläufig. Instron steht unter Wachstumsdruck.</li>
+    <li>Instron kann mit Schwesterfirmen wie Buehler (Metallographie, Härte) Paketangebote bilden.</li>
+  </ul>
+  <p class="src">Quellen: <a href="https://www.sec.gov/Archives/edgar/data/49826/000119312526127630/2026_ars_filing.pdf" target="_blank" rel="noopener">ITW Geschäftsbericht 2025</a>, <a href="https://www.qualitymag.com/articles/84571-itw-acquires-instron-corp" target="_blank" rel="noopener">Quality Magazine</a>, <a href="https://www.plasticstoday.com/plastics-processing/in-testing-times-instron-acquires-ceast" target="_blank" rel="noopener">PlasticsToday</a>, <a href="https://www.chemie.de/news/150926/" target="_blank" rel="noopener">chemie.de</a>, <a href="https://www.heattreattoday.com/?p=18591" target="_blank" rel="noopener">Heat Treat Today</a>, <a href="https://www.instron.com/wp-content/uploads/2026/06/6800-series-universal-testing-systems-brochure-en.pdf" target="_blank" rel="noopener">Instron 6800 Broschüre</a>, <a href="https://www.zwickroell.com/de/" target="_blank" rel="noopener">ZwickRoell Homepage</a></p>
+  <a class="totop" href="#top">Nach oben</a>
+</section>
+
+<!-- 3 -->
+<section id="portfolio">
+  <h2><span class="num">03</span>Produktportfolio</h2>
+  <p class="point">Instron deckt die mechanische Werkstoffprüfung fast so breit ab wie ZwickRoell. ZwickRoell bietet zusätzlich Härteprüfung, Kriech- und Hochtemperaturprüfung und Baustoffprüfung aus einer Hand.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Kategorie</th><th>Instron</th><th>ZwickRoell</th><th>Einschätzung</th></tr></thead>
+    <tbody>
+      <tr><th>Statische Universalprüfmaschinen</th><td>3400 (Routine), 6800 (Premium, 0,5 bis 300 kN), 3300 seit 2026 auslaufend</td><td>zwickiLine, ProLine, AllroundLine, Großlastmaschinen bis 2.500 kN</td><td><span class="win">gleichwertig</span></td></tr>
+      <tr><th>Hochkraft, statisch hydraulisch</th><td>2300 Serie bis 2.000 kN, Hydraulikrahmen LX, DX, HDX, KPX</td><td>Großlast- und Hydraulikmaschinen, Toni Technik für Baustoffe</td><td><span class="win z">ZwickRoell breiter bei Baustoffen</span></td></tr>
+      <tr><th>Dynamisch, servohydraulisch</th><td>8800 Familie (z.B. 8803 mit 500 kN), Regelung Labtronic</td><td>Servohydraulische Prüfmaschinen</td><td><span class="win i">Instron stark in USA und UK</span></td></tr>
+      <tr><th>Dynamisch, elektrisch</th><td>ElectroPuls E1000 bis E20000</td><td>LTM elektrodynamisch, Vibrophore Resonanz</td><td><span class="win i">ElectroPuls</span> <span class="win z">Vibrophore</span></td></tr>
+      <tr><th>Struktur und Bauteile</th><td>Prüfstände aus Darmstadt, Labtronic EVO, RS LabSite</td><td>Kundenspezifische Prüfsysteme</td><td><span class="win i">Instron in Fahrzeugtechnik</span></td></tr>
+      <tr><th>Schlagprüfung</th><td>CEAST Pendel 9050 (0,5 bis 50 J), Fallwerke 9400</td><td>Pendelschlagwerke, Fallwerke</td><td><span class="win">gleichwertig</span></td></tr>
+      <tr><th>Schmelzindex und Thermik</th><td>CEAST Schmelzindex, HDT und Vicat</td><td>Xflow Reihe, HDT und Vicat</td><td><span class="win">gleichwertig</span></td></tr>
+      <tr><th>Härteprüfung</th><td>über ITW Schwester Buehler</td><td>eigenes Vollsortiment, KI-Bildauswertung</td><td><span class="win z">ZwickRoell aus einer Hand</span></td></tr>
+      <tr><th>Kriechen und Hochtemperatur</th><td>Öfen und Kammern als Zubehör</td><td>Kriechprüfmaschinen, Hochtemperaturlösungen</td><td><span class="win z">ZwickRoell</span></td></tr>
+      <tr><th>Automatisierung</th><td>AT2, AT3 (bis 160 Proben), AT6 (200 bis 1.000 Proben), CT6 Cobot</td><td>ALEX ab 10 Proben, roboTest Familie, Großanlagen</td><td><span class="win z">ZwickRoell Erfahrung mit Großanlagen</span></td></tr>
+      <tr><th>Medizintechnik</th><td>Autoinjektor-Prüfsystem mit Cobot</td><td>Autoinjektor-Prüfsystem auf AllroundLine</td><td><span class="win">gleichwertig</span></td></tr>
+    </tbody>
+  </table></div>
+  <div class="note"><b>Lebenszyklus beachten:</b> Instron hat die 3300 Serie zum 1. Januar 2026 in Phase 3 seines Produktlebenszyklus versetzt. Besitzer dieser Maschinen planen jetzt den Ersatz.</div>
+  <p class="src">Quellen: <a href="https://www.instron.com/en/products/testing-systems/automated-testing-systems" target="_blank" rel="noopener">Instron Automatisierung</a>, <a href="https://www.instron.com/en/resources/glossary/ceast/" target="_blank" rel="noopener">CEAST</a>, <a href="https://www.instron.com/en/products/testing-systems/out-of-production-systems/electromechanical" target="_blank" rel="noopener">Instron ausgelaufene Systeme</a>, <a href="https://www.zwickroell.com/de/produkte/" target="_blank" rel="noopener">ZwickRoell Produkte</a></p>
+  <a class="totop" href="#top">Nach oben</a>
+</section>
+
+<!-- 4 NEU -->
+<section id="statisch">
+  <h2><span class="num">04</span>Statische Prüfmaschinen im Detail</h2>
+  <p class="point">Bei statischen Maschinen bis 100 kN liegen beide Hersteller technisch nah beieinander. ZwickRoell überzeugt mit höheren Geschwindigkeiten bei großen Kräften, genauerer Geschwindigkeitsregelung, feinerer Wegauflösung und der hochauflösenden Dehnungsmessung. Instron punktet mit 5 kHz Datenrate, veröffentlichter Rahmensteifigkeit und Sicherheitsfunktionen beim Einrichten.</p>
+
+  <h3 id="statisch-baureihen">4.1 Baureihen im Überblick</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>Segment</th><th>Instron</th><th>ZwickRoell</th></tr></thead>
+    <tbody>
+      <tr><th>Einstieg und Routine-QS</th><td>3400 Serie: Tisch bis 100 kN, Boden bis 300 kN, Datenrate 1 kHz, ±0,5 % bis 1/250 der Nennlast</td><td>zwickiLine (Einsäuler), ProLine</td></tr>
+      <tr><th>Premium und Forschung</th><td>6800 Serie: Einsäuler 0,5 bis 5 kN, Tisch 5 bis 100 kN, Boden 100 und 300 kN, Datenrate 5 kHz, ±0,5 % bis 1/1.000 der Nennlast</td><td>AllroundLine: Tisch Z005 bis Z150, Bodenmaschinen; Elektronik testControl II</td></tr>
+      <tr><th>Hohe Kräfte</th><td>68FM-300 bis 300 kN; darüber Hydraulikrahmen</td><td>Großlastmaschinen bis 2.500 kN</td></tr>
+      <tr><th>Auslaufend</th><td>3300 Serie (Phase 3 seit Januar 2026), 5900 als Vorgänger der 6800</td><td>Nachrüstung alter Maschinen mit retroLine</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3 id="statisch-daten">4.2 Technische Daten im Vergleich</h3>
+  <p>Der Vergleich nutzt die direkten Gegenspieler: Instron 68TM-50 gegen AllroundLine Z050 und Instron 68TM-100 gegen AllroundLine Z100. Alle Werte stammen aus den aktuellen Datenblättern der Hersteller.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Merkmal</th><th class="num">Instron 68TM-50</th><th class="num">ZwickRoell Z050</th><th class="num">Instron 68TM-100</th><th class="num">ZwickRoell Z100</th></tr></thead>
+    <tbody>
+      <tr><th>Höchstgeschwindigkeit, mm/min</th><td class="num">762</td><td class="num">600</td><td class="num">508</td><td class="num zr">1.500</td></tr>
+      <tr><th>Geschwindigkeit bei voller Kraft, mm/min</th><td class="num">381</td><td class="num">600</td><td class="num">254</td><td class="num zr">1.500</td></tr>
+      <tr><th>Mindestgeschwindigkeit, mm/min</th><td class="num">0,001</td><td class="num zr">0,0005</td><td class="num">0,001</td><td class="num zr">0,0001</td></tr>
+      <tr><th>Rücklauf, max. mm/min</th><td class="num">800</td><td class="num zr">1.000</td><td class="num">508</td><td class="num zr">2.500</td></tr>
+      <tr><th>Abweichung von der Sollgeschwindigkeit</th><td class="num">±0,1 %</td><td class="num zr">0,05 %</td><td class="num">±0,1 %</td><td class="num zr">0,05 %</td></tr>
+      <tr><th>Wegauflösung des Antriebs, nm</th><td class="num">1,8</td><td class="num zr">0,32</td><td class="num">2,69</td><td class="num zr">0,48</td></tr>
+      <tr><th>Datenrate an den PC</th><td class="num zr">5 kHz</td><td class="num">500 Hz (opt. 2 kHz)</td><td class="num zr">5 kHz</td><td class="num">500 Hz (opt. 2 kHz)</td></tr>
+      <tr><th>Interne Messwerterfassung</th><td class="num">nicht angegeben</td><td class="num zr">400 kHz, 24 bit</td><td class="num">nicht angegeben</td><td class="num zr">400 kHz, 24 bit</td></tr>
+      <tr><th>Prüfraumhöhe, mm (Standard / hoch)</th><td class="num">1.190 / 1.695</td><td class="num zr">1.355 / 1.755</td><td class="num">1.168 / 1.672</td><td class="num zr">1.355 / 1.755</td></tr>
+      <tr><th>Prüfraumbreite, mm</th><td class="num">420</td><td class="num">440 oder 640</td><td class="num">420</td><td class="num zr">640</td></tr>
+      <tr><th>Rahmensteifigkeit, kN/mm</th><td class="num zr">180</td><td class="num">nicht veröffentlicht</td><td class="num zr">180</td><td class="num">nicht veröffentlicht</td></tr>
+    </tbody>
+  </table></div>
+  <p>Hinweis zur Geschwindigkeit bei voller Kraft: Instron nennt diesen Wert ausdrücklich, er halbiert sich gegenüber der Höchstgeschwindigkeit. ZwickRoell gibt an, dass Prüfungen jederzeit mit voller Prüfkraft und voller Prüfgeschwindigkeit möglich sind. Bei Z050 und Z100 gilt deshalb die Höchstgeschwindigkeit auch bei Nennkraft. Bei geöffneter Schutztür begrenzen beide Hersteller auf 600 mm/min.</p>
+  <p>Bei kleinen Kräften ist Instron teils schneller: Die 68TM-5 erreicht 3.048 mm/min, die Z005 3.000 mm/min; die 68TM-10 erreicht 2.032 mm/min, die Z010 2.000 mm/min. Hier sind beide praktisch gleichauf.</p>
+
+  <h3 id="statisch-technik">4.3 Antrieb, Rahmen und Elektronik</h3>
+  <div class="grid2">
+    <div class="cell hl">
+      <h4>ZwickRoell AllroundLine</h4>
+      <ul>
+        <li>Wartungsfreier AC-Servomotor mit Hiperface Motorfeedback, adaptiver Regler mit 1.000 Hz Takt.</li>
+        <li>Positionier-Wiederholgenauigkeit ±2 µm.</li>
+        <li>Patentiertes biegesteifes Hohlkammerprofil mit Führungszylinder; T-Nuten für Anbauten.</li>
+        <li>Zwei Prüfräume möglich: zwei Prüfungen ohne Werkzeugwechsel, ein Kraftaufnehmer für beide.</li>
+        <li>testControl II: 400 kHz Abtastung, 24 bit, effektiv 19 bis 20 bit, Messbereich bis 165 % von Fmax.</li>
+        <li>Echtzeitkorrektur der Maschinennachgiebigkeit, Messsignal-Laufzeitkorrektur.</li>
+        <li>EtherCAT serienmäßig, 6 zeitsynchrone Steckplätze, System-Monitoring, Eco-Modus.</li>
+        <li>Fernbedienung mit Farbdisplay und Not-Halt; Versuch ohne PC möglich.</li>
+        <li>Ersatzteile mindestens 10 Jahre nach Produktabkündigung.</li>
+        <li>Entwicklung und Fertigung in Ulm.</li>
+      </ul>
+    </div>
+    <div class="cell wb">
+      <h4>Instron 6800</h4>
+      <ul>
+        <li>Bürstenloser AC-Servomotor, Zweiriemen-Antrieb ohne Getriebe, vorgespannte Lager, Kugelgewindetriebe.</li>
+        <li>Zyklische, Kriech- und Relaxationsversuche bis 10 Tage (bis 1 Hz).</li>
+        <li>Datenrate bis 5 kHz auf Kraft, Weg und Dehnung, bis 11 Messverstärker.</li>
+        <li>Operator Protect: Geschwindigkeit beim Einrichten begrenzt, virtuelle Verriegelung, Sicherheitshinweise.</li>
+        <li>Kollisionsschutz bis 600 mm/min, Probenschutz gegen ungewollte Kräfte.</li>
+        <li>Feinpositionierung in 4 µm Schritten über Handrad.</li>
+        <li>Smart-Close Air Kit für pneumatische Probenhalter.</li>
+        <li>Schutz gegen Schmutz durch Dichtungen und Luftführung; Elektronik schnell tauschbar.</li>
+        <li>10 Jahre Garantie auf die Mechanik (seit Juni 2025).</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3 id="statisch-kraft">4.4 Kraftmessung</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>Merkmal</th><th>Instron</th><th>ZwickRoell</th></tr></thead>
+    <tbody>
+      <tr><th>Kraftaufnehmer</th><td>2580 Serie (für 6800), 2530 Serie</td><td>Xforce HP+, Xforce K und weitere, eigene Entwicklung und Fertigung, patentiert</td></tr>
+      <tr><th>Genauigkeit</th><td>2580: ±0,5 % vom Messwert bis 1/1.000 der Nennlast; 2530: ±0,5 % bis 1/250</td><td>Klasse 0,5 oder 1 nach ISO 7500-1 je Aufnehmer; Xforce HP+ Klasse 0,5 ab 0,1 % der Nennkraft</td></tr>
+      <tr><th>Überlast</th><td>150 % ohne Schaden, 300 % ohne mechanisches Versagen</td><td>Messbereich bis 165 % von Fmax, automatischer Überlastschutz aller gesteckten Sensoren</td></tr>
+      <tr><th>Besonderheit</th><td>Automatische Erkennung und elektrische Kalibrierung</td><td>Geringe Empfindlichkeit gegen Temperatur und Querkräfte, wichtig bei Druck- und Biegeversuchen</td></tr>
+    </tbody>
+  </table></div>
+  <p>In der reinen Genauigkeit sind beide gleichauf: ±0,5 % ab 0,1 % der Nennlast. Den Unterschied macht ZwickRoell über die Robustheit gegen Querkräfte und Temperatur.</p>
+
+  <h3 id="statisch-ext">4.5 Extensometer</h3>
+  <p class="point">ZwickRoell führt bei der Auflösung und bei der markenfreien optischen Messung. Instron punktet mit langem Messweg bei berührender Messung und mit Zusatzfunktionen der Videotechnik.</p>
+  <h4>Berührende automatische Extensometer</h4>
+  <div class="tbl"><table>
+    <thead><tr><th>Merkmal</th><th>Instron AutoX750</th><th>ZwickRoell makroXtens II</th><th>Vorteil</th></tr></thead>
+    <tbody>
+      <tr><th>Auflösung</th><td class="num">0,1 µm</td><td class="num zr">0,006 µm (HP, 300 mm Fühler)</td><td><span class="win z">ZwickRoell, rund 16-fach feiner</span></td></tr>
+      <tr><th>Genauigkeit</th><td>±1 µm oder 0,5 % vom Messwert, ISO 9513 Klasse 0,5</td><td>ISO 9513 Klasse 0,5 ab 20 µm; max. ±1 µm im Bereich 20 bis 200 µm, erfüllt Zusatzforderung ISO 527-1</td><td><span class="win z">ZwickRoell im Anfangsbereich</span></td></tr>
+      <tr><th>Mitnahmekraft</th><td class="num">&lt; 0,1 N</td><td class="num zr">≤ 0,05 N</td><td><span class="win z">ZwickRoell</span></td></tr>
+      <tr><th>Messweg / Messlänge</th><td>750 mm Weg, Messlänge 10 bis 750 mm</td><td>Anfangsmesslänge bis 300 mm; multiXtens II bis 700 mm</td><td><span class="win i">Instron beim langen Weg</span></td></tr>
+      <tr><th>Dehnungsregelung</th><td>ISO 6892-1 Verfahren A, ASTM E8</td><td>HP freigegeben für ISO 6892-1 Verfahren A und ASTM E8</td><td><span class="win">gleichwertig</span></td></tr>
+      <tr><th>Temperatur</th><td>nicht angegeben</td><td>Fühler für −80 bis +360 °C</td><td><span class="win z">ZwickRoell</span></td></tr>
+      <tr><th>Querdehnung, r- und n-Wert</th><td>AutoXBiax, 10 bis 40 mm Breite</td><td>Breitenänderungsaufnehmer, mechanisch oder videoXtens</td><td><span class="win">gleichwertig</span></td></tr>
+      <tr><th>E-Modul an Metallen</th><td>über AutoX750</td><td>Kombination mit motorischem Feindehnungsaufnehmer, beidseitige Messung</td><td><span class="win z">ZwickRoell</span></td></tr>
+      <tr><th>Verbreitung</th><td>nicht angegeben</td><td>über 7.500 installierte Systeme</td><td><span class="win z">ZwickRoell</span></td></tr>
+    </tbody>
+  </table></div>
+  <h4>Berührungslose Extensometer</h4>
+  <div class="tbl"><table>
+    <thead><tr><th>Merkmal</th><th>Instron AVE3</th><th>ZwickRoell videoXtens</th><th>ZwickRoell laserXtens Array</th></tr></thead>
+    <tbody>
+      <tr><th>Prinzip</th><td>Video mit Messmarken</td><td>Video mit Messmarken</td><td class="zr">Laser-Speckle, ohne Messmarken</td></tr>
+      <tr><th>Auflösung</th><td>0,25 bis 3 µm je Objektiv (0,5 µm beim Standardobjektiv)</td><td class="zr">0,15 µm bei bis zu 140 mm</td><td class="zr">0,07 µm bei 220 mm Sichtfeld</td></tr>
+      <tr><th>Sichtfeld</th><td>85 bis 522 mm (Tisch), bis 685 mm (Boden)</td><td>bis 140 mm (genannte Version)</td><td>220 mm</td></tr>
+      <tr><th>Genauigkeitsklasse</th><td>ISO 9513 Klasse 0,5 (35 und 16 mm Objektiv), sonst Klasse 1 oder 2</td><td>geeignet für E-Modul nach ISO 527-1</td><td>für Proben ohne Markierung</td></tr>
+      <tr><th>Datenrate</th><td>500 Hz</td><td>mit testControl II</td><td>mit testControl II</td></tr>
+      <tr><th>Besonderheiten</th><td>Luftkanal CDAT gegen Luftschlieren (bis 5-fach genauer), AverEdge32 für r-Wert, Bildkorrelation (DIC), Objektivwechsel</td><td>Einsatz in Temperierkammern</td><td>Keine Probenvorbereitung, ideal für empfindliche oder heiße Proben</td></tr>
+    </tbody>
+  </table></div>
+  <div class="grid2">
+    <div class="cell hl">
+      <h4>Wo ZwickRoell überzeugt</h4>
+      <ul>
+        <li>Feinste Auflösung im Markt: makroXtens II HP 0,006 µm, laserXtens 0,07 µm.</li>
+        <li>Messung ohne Markierung mit laserXtens: keine Probenvorbereitung, kein Einfluss auf die Probe.</li>
+        <li>Klasse 0,5 schon ab 20 µm Messweg: sichere Moduln nach ISO 527-1 und an Metallen.</li>
+        <li>Sehr geringe Mitnahmekraft, wichtig bei Folien, dünnen Kunststoffen und Fasern.</li>
+        <li>Direkter EtherCAT-Anschluss an testControl II, kein zusätzliches Messmodul.</li>
+        <li>Bewährter Industriestandard mit über 7.500 Systemen.</li>
+      </ul>
+    </div>
+    <div class="cell wb">
+      <h4>Wo Instron stark ist (intern)</h4>
+      <ul>
+        <li>AutoX750 mit 750 mm Weg für große Dehnungen.</li>
+        <li>AVE3 mit großem Sichtfeld, Objektiven zum Tauschen und CDAT gegen Luftschlieren.</li>
+        <li>AverEdge32 mittelt 32 Messungen für den r-Wert.</li>
+        <li>Bildkorrelation (DIC) direkt mit Bluehill verbunden.</li>
+        <li>Ein Videoextensometer ersetzt mehrere Ansetzaufnehmer.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3 id="statisch-argumente">4.6 Argumentation für ZwickRoell</h3>
+  <p>Alle Aussagen sind positiv formuliert und beziehen sich auf den Nutzen für den Kunden. Wir nennen keine Schwächen des Wettbewerbs.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Kundenbedarf</th><th>Unsere Aussage</th><th>Beleg</th></tr></thead>
+    <tbody>
+      <tr><th>Hoher Durchsatz bei 100 kN</th><td>„Die AllroundLine Z100 prüft mit voller Kraft bei bis zu 1.500 mm/min und fährt mit 2.500 mm/min zurück. Das verkürzt jede Prüfung im Metalllabor spürbar.“</td><td>Datenblatt AllroundLine</td></tr>
+      <tr><th>Normgerechte Geschwindigkeit</th><td>„Wir halten die eingestellte Geschwindigkeit auf 0,05 % genau. Das gibt Sicherheit bei ISO 6892-1 und ISO 527.“</td><td>Datenblatt AllroundLine</td></tr>
+      <tr><th>Sehr langsame Versuche</th><td>„Ab 0,0001 mm/min fahren wir gleichmäßig, dank Motorfeedback auch bei kleinsten Geschwindigkeiten.“</td><td>Datenblatt Z100</td></tr>
+      <tr><th>Exakter E-Modul</th><td>„Der makroXtens II ist ab 20 µm in Klasse 0,5 kalibriert und löst bis 0,006 µm auf. So ermitteln Sie den Modul sicher und reproduzierbar.“</td><td>Produktinformation makroXtens II</td></tr>
+      <tr><th>Empfindliche oder heiße Proben</th><td>„Mit laserXtens messen Sie ohne Markierung und ohne Berührung, bei 0,07 µm Auflösung.“</td><td>ZwickRoell Extensometer</td></tr>
+      <tr><th>Vielseitiges Labor</th><td>„Mit zwei Prüfräumen erledigen Sie zwei Prüfarten an einer Maschine, mit einem Kraftaufnehmer. Das spart eine zweite Maschine und Kalibrierkosten.“</td><td>Datenblatt AllroundLine</td></tr>
+      <tr><th>Druck- und Biegeversuche</th><td>„Unsere Xforce Kraftaufnehmer sind besonders unempfindlich gegen Querkräfte und Temperatur.“</td><td>Datenblatt AllroundLine</td></tr>
+      <tr><th>Investitionssicherheit</th><td>„Ersatzteile gibt es mindestens 10 Jahre nach Abkündigung. Mit retroLine modernisieren wir Ihre Maschine statt sie zu ersetzen.“</td><td>Datenblatt AllroundLine, retroLine</td></tr>
+      <tr><th>Datenqualität bei schnellen Brüchen</th><td>„testControl II tastet intern mit 400 kHz und 24 bit ab und überträgt bis 2.000 Hz zeitsynchron auf allen Kanälen.“</td><td>Datenblatt testControl II</td></tr>
+    </tbody>
+  </table></div>
+  <div class="note"><b>Interner Hinweis:</b> Bei sehr schnellen Prüfungen mit Datenraten über 2 kHz und bei Videoextensometern mit großem Sichtfeld hat Instron starke Datenblattwerte. Hier im Gespräch auf das Gesamtsystem lenken: Auflösung, markenfreie Messung, Prüfgeschwindigkeit bei voller Kraft und Service. Ein Vergleichstest mit Kundenproben im Prüflabor in Ulm überzeugt mehr als jede Zahl.</div>
+  <p class="src">Quellen: <a href="https://www.instron.com/wp-content/uploads/2026/06/6800-series-universal-testing-systems-brochure-en.pdf" target="_blank" rel="noopener">Instron 6800 Broschüre (Juni 2026)</a>, <a href="https://www.instron.com/wp-content/uploads/2024/06/3400-Series-Floor-Model-Universal-Testing-Machines.pdf" target="_blank" rel="noopener">Instron 3400 Datenblatt</a>, <a href="https://www.instron.com/wp-content/uploads/2025/05/ave3-advanced-video-extensometer-data-sheet.pdf" target="_blank" rel="noopener">Instron AVE3 Datenblatt</a>, <a href="https://www.instron.com/wp-content/uploads/2024/07/automatic-contacting-extensometer-autox750-1.pdf" target="_blank" rel="noopener">Instron AutoX750 Datenblatt</a>, <a href="https://www.zwickroell.com/fileadmin/content/Files/SharePoint/user_upload/PI_DE/02_284_Material_Pruefmaschine_AllroundLine_Z005_bis_Z100_PI_DE.pdf" target="_blank" rel="noopener">ZwickRoell AllroundLine Z005 bis Z100</a>, <a href="https://www.zwickroell.com/fileadmin/content/Files/SharePoint/user_upload/PI_DE/08_220_makroXtens_II_PI_DE.pdf" target="_blank" rel="noopener">ZwickRoell makroXtens II</a>, <a href="https://www.zwickroell.com/fileadmin/content/Files/SharePoint/user_upload/PI_DE/03_834_Kraftaufnehmer_Xforce_HP_und_Xforce_K_PI_DE.pdf" target="_blank" rel="noopener">ZwickRoell Xforce</a>, <a href="https://www.azom.com/article.aspx?ArticleID=19868" target="_blank" rel="noopener">AZoM zu videoXtens und laserXtens</a></p>
+  <a class="totop" href="#top">Nach oben</a>
+</section>
+
+<!-- 5 -->
+<section id="software">
+  <h2><span class="num">05</span>Software und Digitalisierung</h2>
+  <p class="point">Instron setzt auf einfache Bedienung mit Bluehill Universal und Laborvernetzung mit Bluehill Central 2. ZwickRoell bietet mit testXpert mehr Tiefe, Produktionsanalytik und als einziger der beiden veröffentlichte KI-Funktionen.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Bereich</th><th>Instron</th><th>ZwickRoell</th></tr></thead>
+    <tbody>
+      <tr><th>Prüfsoftware statisch</th><td>Bluehill Universal v4.55 (August 2025), Touch, QuickTest, Workflows, TestProfiler</td><td>testXpert III mit Normprüfprogrammen</td></tr>
+      <tr><th>Dynamik</th><td>WaveMatrix</td><td>testXpert Research</td></tr>
+      <tr><th>Servohydraulik und Struktur</th><td>RS LabSite, Labtronic EVO (EtherCAT 10 kHz)</td><td>testControl II, kundenspezifische Lösungen</td></tr>
+      <tr><th>Laborverwaltung</th><td>Bluehill Central 2 (Juli 2025): zentrale Vorlagen, Nutzer, Ergebnisse, Prüfpfad, Offlinemodus</td><td>testXpert Analytics: Echtzeitsicht, Abweichungen früh erkennen, vorausschauende Wartung</td></tr>
+      <tr><th>KI</th><td>keine veröffentlicht</td><td>KI-Rissdetektion beim Lochaufweitversuch (ISO 16630), KI-Bildauswertung Härte, KI-gestützter Zugversuch als Vision</td></tr>
+      <tr><th>Fernservice</th><td>Instron Connect</td><td>Fernservice, Kundenportal</td></tr>
+      <tr><th>Regulierte Branchen</th><td>Bluehill Traceability (21 CFR Part 11)</td><td>testXpert mit Part 11 Optionen</td></tr>
+    </tbody>
+  </table></div>
+  <p class="src">Quellen: <a href="https://www.instron.com/en/products/materials-testing-software/bluehill-universal/latest-features/" target="_blank" rel="noopener">Bluehill Universal</a>, <a href="https://www.instron.com/en/resources/news-listing/2025/07/bluehill-central-2-software-platform-released/" target="_blank" rel="noopener">Bluehill Central 2</a>, <a href="https://www.zwickroell.com/news-events/news/breaking-ground-in-materials-testing-how-artificial-intelligence-ai-revolutionizes-hole-expansion-tests-to-iso-16630" target="_blank" rel="noopener">ZwickRoell KI-Rissdetektion</a>, <a href="https://www.zwickroell.com/de/news-events/blog/ki-unterstuetzter-zugversuch/" target="_blank" rel="noopener">KI-unterstützter Zugversuch</a></p>
+  <a class="totop" href="#top">Nach oben</a>
+</section>
+
+<!-- 6 -->
+<section id="branchen">
+  <h2><span class="num">06</span>Branchen und Anwendungen</h2>
+  <p class="point">Instron setzt seine Schwerpunkte auf Batterie, Medizintechnik, Verbundwerkstoffe und Luftfahrt. ZwickRoell ist traditionell stark in Metall und Stahl, Automobil in Europa und im Bauwesen.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Branche</th><th>Instron</th><th>ZwickRoell</th><th>Lage</th></tr></thead>
+    <tbody>
+      <tr><th>Medizintechnik und Pharma</th><td>sehr stark: Autoinjektoren, Spritzen, Implantate, Normungsarbeit</td><td>stark, z.B. PolyMedics (Part 11)</td><td><span class="win i">Instron vor allem USA</span></td></tr>
+      <tr><th>Batterie und Elektromobilität</th><td>stark, InterBattery Seoul</td><td>stark, eigene Batterieprüfung</td><td><span class="win">offen</span></td></tr>
+      <tr><th>Verbundwerkstoffe</th><td>sehr stark, JEC World</td><td>stark, z.B. GKN Aerospace</td><td><span class="win">offen</span></td></tr>
+      <tr><th>Luftfahrt</th><td>stark</td><td>stark</td><td><span class="win">offen</span></td></tr>
+      <tr><th>Automobil und Zulieferer</th><td>stark bei Bauteilprüfung</td><td>sehr stark</td><td><span class="win z">ZwickRoell in Europa</span></td></tr>
+      <tr><th>Kunststoffe und Gummi</th><td>sehr stark dank CEAST</td><td>sehr stark, z.B. KRAIBURG TPE</td><td><span class="win">offen</span></td></tr>
+      <tr><th>Metall und Stahl</th><td>mittel, Ausbau mit AT3</td><td>sehr stark, z.B. Outokumpu USA, GKN Metal Powder</td><td><span class="win z">ZwickRoell</span></td></tr>
+      <tr><th>Bauwesen</th><td>mittel</td><td>stark mit Toni Technik</td><td><span class="win z">ZwickRoell</span></td></tr>
+      <tr><th>Hochschulen</th><td>sehr stark in USA und UK</td><td>sehr stark in Europa</td><td><span class="win">regional</span></td></tr>
+    </tbody>
+  </table></div>
+  <p class="src">Quellen: <a href="https://www.instron.com/en/industry-solutions/" target="_blank" rel="noopener">Instron Branchenlösungen</a>, <a href="https://www.zwickroell.com/de/news-events/case-studies/" target="_blank" rel="noopener">ZwickRoell Case Studies</a></p>
+  <a class="totop" href="#top">Nach oben</a>
+</section>
+
+<!-- 7 -->
+<section id="regionen">
+  <h2><span class="num">07</span>Regionale Präsenz und Vertrieb</h2>
+  <p class="point">Instrons Heimatmarkt ist Nordamerika, ZwickRoells Heimatmarkt Europa. In Asien, dem größten Markt, wachsen chinesische Anbieter wie Jinan Shijin.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Region</th><th class="num">Marktanteil Universalprüfmaschinen</th><th>Instron</th><th>ZwickRoell</th></tr></thead>
+    <tbody>
+      <tr><th>Asien und Pazifik</th><td class="num">etwa 40 %</td><td>Japan seit 1965, China seit 1983, Bengaluru mit Kalibrierlabor</td><td>eigene Gesellschaften in China, Indien, Japan, Korea, Südostasien</td></tr>
+      <tr><th>Nordamerika</th><td class="num">etwa 30 %</td><td>Heimatmarkt, große installierte Basis</td><td>ZwickRoell LP in Kennesaw (Georgia), Onlineshop mit Lagermaschinen</td></tr>
+      <tr><th>Europa</th><td class="num">etwa 24 %</td><td>High Wycombe, Darmstadt, Pianezza</td><td>Heimatmarkt, Stammsitz Ulm</td></tr>
+    </tbody>
+  </table></div>
+  <ul class="list">
+    <li>Instron verkauft direkt in Kernländern und über Händler in kleineren Märkten; Webinare und Fachinhalte erzeugen Anfragen.</li>
+    <li>Einschätzung, nicht belegt: Rahmenverträge mit US-Konzernen. Mit eigenen Verlustanalysen prüfen.</li>
+  </ul>
+  <p class="src">Quellen: <a href="https://www.dri.co.jp/auto/report/qyr/250214-universal-material-testing-machine-global.html" target="_blank" rel="noopener">QYResearch via DRI</a>, <a href="https://instron.jp/ja-jp/our-company/about-us" target="_blank" rel="noopener">Instron Japan</a>, <a href="https://shop.zwickroell.com/en-us/pages/why-choose-zwickroell" target="_blank" rel="noopener">ZwickRoell Shop USA</a></p>
+  <a class="totop" href="#top">Nach oben</a>
+</section>
+
+<!-- 8 -->
+<section id="service">
+  <h2><span class="num">08</span>Preis- und Servicestrategie</h2>
+  <p class="point">Beide Hersteller positionieren sich im Premiumsegment und veröffentlichen keine Listenpreise. Instron verkauft stark über Service und seit Juni 2025 über 10 Jahre Mechanikgarantie.</p>
+  <div class="note"><b>Neues Verkaufsargument von Instron:</b> 10 Jahre Garantie auf die Mechanik jeder neuen 3400 und 6800 Maschine. Der ZwickRoell Vertrieb braucht dazu eine eigene, positive Antwort (siehe Abschnitt 13).</div>
+  <div class="tbl"><table>
+    <thead><tr><th>Leistung</th><th>Instron</th><th>ZwickRoell</th></tr></thead>
+    <tbody>
+      <tr><th>Kalibrierung</th><td>ISO/IEC 17025 (NVLAP), Kraft, Weg, Dehnung, Temperatur, Schlag, Ausrichtung u.a.; über 90.000 Sensoren pro Jahr</td><td>ISO/IEC 17025 (DAkkS), akkreditiert auch für Fremdmaschinen</td></tr>
+      <tr><th>Außendienst</th><td>über 300 Techniker, über 40 Sprachen</td><td>347 Mitarbeiter in Vertrieb und Service, 56 Länder</td></tr>
+      <tr><th>Vorführung</th><td>Anwendungslabor</td><td>über 50 Prüfmaschinen und über 2.000 Zubehörteile in den Prüflaboren vorführbar</td></tr>
+      <tr><th>Wartungsverträge</th><td>Bündel aus Wartung, Kalibrierung und Instron Connect</td><td>Serviceverträge in mehreren Stufen</td></tr>
+      <tr><th>Lebensdauer</th><td>10 Jahre Mechanikgarantie</td><td>Ersatzteile mindestens 10 Jahre nach Abkündigung, retroLine Modernisierung</td></tr>
+      <tr><th>Schulung</th><td>vor Ort, regional, im Werk, online</td><td>ZwickRoell Academy, neues Trainingszentrum in Ulm (11,2 Mio. €)</td></tr>
+    </tbody>
+  </table></div>
+  <p class="src">Quellen: <a href="https://www.instron.com/en/resources/news-listing/?paged=3" target="_blank" rel="noopener">Instron News 2025</a>, <a href="https://www.instron.jp/-/media/literature-library/quality/2013/04/global-calibration-lab-iso-17025-accreditation.pdf?la=ja-jp" target="_blank" rel="noopener">Instron Kalibrierung</a>, <a href="https://www.zwickroell.com/de/services/kalibrierung/" target="_blank" rel="noopener">ZwickRoell Kalibrierung</a></p>
+  <a class="totop" href="#top">Nach oben</a>
+</section>
+
+<!-- 9 -->
+<section id="marketing">
+  <h2><span class="num">09</span>Marketing und Markenauftritt</h2>
+  <p class="point">Instron vermarktet sich als Erfinder der modernen Werkstoffprüfung („80 Jahre“, „96 % der Fortune 100“) und setzt stark auf Fachinhalte in vielen Sprachen.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Kanal</th><th>Instron</th></tr></thead>
+    <tbody>
+      <tr><th>Webseite</th><td>Viele Sprachen, Lösungen nach Branche und Norm, Glossar</td></tr>
+      <tr><th>Webinare</th><td>2026 Fokus auf Kunststoffe in Medizin, Konsumgütern, Automobil, Automatisierung</td></tr>
+      <tr><th>Messen 2026</th><td>Pharmapack, JEC World, InterBattery, Testing Expo Stuttgart, EIS Silverstone (Hauptsponsor)</td></tr>
+      <tr><th>Eigene Events</th><td>Tag der offenen Tür in Norwood</td></tr>
+      <tr><th>LinkedIn</th><td>Fallstudien, Messen, Stellen</td></tr>
+    </tbody>
+  </table></div>
+  <p>ZwickRoell hält mit testXpo, der Webinar-Reihe im November 2026 (11 Kurz-Webinare, auch zu KI), der Academy und Case Studies aus über 20 Branchen dagegen.</p>
+  <p class="src">Quellen: <a href="https://www.instron.com/en/resources/webinars/" target="_blank" rel="noopener">Instron Webinare</a>, <a href="https://www.zwickroell.com/de/news-events/digitale-veranstaltungen/" target="_blank" rel="noopener">ZwickRoell Webinare</a></p>
+  <a class="totop" href="#top">Nach oben</a>
+</section>
+
+<!-- 10 -->
+<section id="innovation">
+  <h2><span class="num">10</span>Neuheiten seit 2025</h2>
+  <p class="point">Instron bringt in hohem Takt Weiterentwicklungen, vor allem in Feldern, in denen ZwickRoell stark ist. KI ist bisher nicht dabei.</p>
+  <div class="tbl"><table>
+    <thead><tr><th class="num">Datum</th><th>Neuheit</th><th>Bedeutung für ZwickRoell</th></tr></thead>
+    <tbody>
+      <tr><td class="num">Aug 2026</td><td><a href="https://www.instron.com/ko/resources/news-listing/2026/08/instron-launches-labtronic-evo/" target="_blank" rel="noopener">Labtronic EVO</a>: modulare Servohydraulik-Regelung, EtherCAT 10 kHz, ISO 13849</td><td>Prüfstände und Nachrüstung in Automobil und Luftfahrt</td></tr>
+      <tr><td class="num">Jun 2026</td><td>Neue 6800 Broschüre mit 1.500+ Mitarbeitern und 50.000+ Systemen</td><td>Markenkampagne</td></tr>
+      <tr><td class="num">Mrz 2026</td><td>80 Jahre Instron</td><td>Botschaft „Erfinder der Werkstoffprüfung“</td></tr>
+      <tr><td class="num">Jan 2026</td><td>3300 Serie in Phase 3</td><td>Ersatzbedarf bei Bestandskunden</td></tr>
+      <tr><td class="num">Okt 2025</td><td>ITW kauft ein Unternehmen im Segment für 120 Mio. US$</td><td>beobachten</td></tr>
+      <tr><td class="num">Sep 2025</td><td>100 kN Tischmodell für 6800 und 3400</td><td>Metallprüfung auf kleinem Raum</td></tr>
+      <tr><td class="num">Jul 2025</td><td>Bluehill Central 2</td><td>Laborvernetzung</td></tr>
+      <tr><td class="num">Jun 2025</td><td>AT3 Bodenmodell bis 300 kN</td><td>automatisierte Metallprüfung</td></tr>
+      <tr><td class="num">Jun 2025</td><td>10 Jahre Mechanikgarantie</td><td>starkes Verkaufsargument</td></tr>
+      <tr><td class="num">Mai 2025</td><td><a href="https://www.advancedengineeringuk.com/news/instron-launches-new-ave3-advanced-video-extensometer-71024/" target="_blank" rel="noopener">AVE3 Videoextensometer</a></td><td>Videoextensometrie</td></tr>
+    </tbody>
+  </table></div>
+  <a class="totop" href="#top">Nach oben</a>
+</section>
+
+<!-- 11 -->
+<section id="vergleich">
+  <h2><span class="num">11</span>Direkter Vergleich</h2>
+  <p class="point">Beide liegen in je fünf von zwölf Dimensionen vorne, zwei sind offen. ZwickRoell gewinnt bei Breite, Tiefe, Geschwindigkeit, Dehnungsmessung und Europa. Die Bewertung ist eine Einschätzung (1 schwach, 5 sehr stark).</p>
+  <div class="legend"><span class="lz">ZwickRoell</span><span class="li">Instron</span></div>
+  <div class="score" id="score"></div>
+  <a class="totop" href="#top">Nach oben</a>
+</section>
+
+<!-- 12 -->
+<section id="swot">
+  <h2><span class="num">12</span>SWOT Analyse Instron</h2>
+  <p class="point">Instrons größte Stärke ist die Marke mit riesiger installierter Basis. Seine Lücken liegen bei KI, Härte aus eigener Hand und Sonderlösungen. Nur für die interne Planung.</p>
+  <div class="grid2">
+    <div class="cell wb"><h4>Stärken</h4><ul>
+      <li>Starke Marke, 80 Jahre Geschichte, über 50.000 Systeme</li>
+      <li>Einfache Software mit niedriger Einstiegshürde</li>
+      <li>ElectroPuls als führende elektrodynamische Plattform</li>
+      <li>5 kHz Datenrate, AVE3 mit DIC und CDAT</li>
+      <li>10 Jahre Mechanikgarantie, Finanzkraft von ITW</li>
+    </ul></div>
+    <div class="cell wb"><h4>Schwächen</h4><ul>
+      <li>Keine Härteprüfung im eigenen Sortiment</li>
+      <li>Keine veröffentlichten KI-Funktionen</li>
+      <li>Segment wächst organisch nicht</li>
+      <li>80/20-Steuerung begrenzt Sonderlösungen</li>
+      <li>Geringere Prüfgeschwindigkeit bei voller Kraft (100 kN)</li>
+    </ul></div>
+    <div class="cell wb"><h4>Chancen</h4><ul>
+      <li>Batterie und Elektromobilität</li>
+      <li>Medizintechnik mit Cobots</li>
+      <li>Laborvernetzung mit Bluehill Central 2</li>
+      <li>Ersatz der 3300 Serie</li>
+      <li>Modernisierung mit Labtronic EVO</li>
+    </ul></div>
+    <div class="cell wb"><h4>Risiken</h4><ul>
+      <li>Chinesische Anbieter mit niedrigen Preisen</li>
+      <li>Schwache Industriekonjunktur in Europa</li>
+      <li>ZwickRoells KI-Vorsprung und US-Onlineshop</li>
+      <li>Zollkonflikte zwischen USA, EU und China</li>
+    </ul></div>
+  </div>
+  <a class="totop" href="#top">Nach oben</a>
+</section>
+
+<!-- 13 -->
+<section id="leitfaden">
+  <h2><span class="num">13</span>Gesprächsleitfaden für den Vertrieb</h2>
+  <p class="point">Wir gewinnen, wenn wir den Nutzen von ZwickRoell konkret zeigen: Komplettangebot, Software-Tiefe, KI, Geschwindigkeit, Messgenauigkeit und Sonderlösungen. Über den Wettbewerber sprechen wir respektvoll.</p>
+  <div class="grid2">
+    <div class="cell hl"><h4>Hier überzeugt ZwickRoell besonders</h4><ul>
+      <li>Mehrere Prüfarten aus einer Hand: Zug, Härte, Schlag, Kriechen, mit einer Software.</li>
+      <li>Hoher Durchsatz und Automatisierung, besonders in Metall und Stahl.</li>
+      <li>Prüfdaten für die Produktion nutzen mit testXpert Analytics und KI.</li>
+      <li>Sonderprüfungen, eigene Normen, besondere Proben.</li>
+      <li>Service und Beratung vor Ort mit deutschsprachigen Ansprechpartnern.</li>
+    </ul></div>
+    <div class="cell"><h4>Hier gut vorbereiten (intern)</h4><ul>
+      <li>Konzernstandard auf Instron, oft bei US-Mutterkonzernen.</li>
+      <li>Labore mit vielen wechselnden Nutzern.</li>
+      <li>Elektrodynamische Ermüdung kleiner Kräfte.</li>
+      <li>Einkauf vergleicht Kaufpreis und Garantie.</li>
+    </ul></div>
+  </div>
+  <h4>Typische Kundenaussagen und positive Antworten</h4>
+  <div class="say">
+    <div class="q">„Instron gibt uns 10 Jahre Garantie auf die Mechanik.“</div>
+    <div class="a">Ein guter Punkt, Sicherheit über viele Jahre ist wichtig. Bei ZwickRoell sichern wir die gesamte Lebensdauer ab: Ersatzteile mindestens 10 Jahre nach Abkündigung, akkreditierte Kalibrierung und Service in 56 Ländern. Gerne rechnen wir die Gesamtkosten über 10 Jahre gemeinsam durch.</div>
+  </div>
+  <div class="say">
+    <div class="q">„Die Instron Software ist sehr einfach.“</div>
+    <div class="a">Einfache Bedienung ist uns genauso wichtig. testXpert führt Gelegenheitsnutzer mit fertigen Normprüfprogrammen und bietet Experten die volle Tiefe. Ich zeige es Ihnen gerne live mit Ihrer Prüfung.</div>
+  </div>
+  <div class="say">
+    <div class="q">„Wir haben schon viele Instron Maschinen.“</div>
+    <div class="a">Das ist kein Hindernis. Mit retroLine modernisieren wir auch Maschinen anderer Hersteller und bringen sie in testXpert. So arbeitet Ihr Labor mit einer Software und einem Servicepartner.</div>
+  </div>
+  <div class="say">
+    <div class="q">„Instron ist bei uns Konzernstandard.“</div>
+    <div class="a">Verstehe ich. Wir bieten Ihnen gerne einen Vergleichstest mit Ihren Proben in unserem Prüflabor an, mit dokumentierten Ergebnissen. Dann entscheiden die Daten.</div>
+  </div>
+  <div class="say">
+    <div class="q">„Wir brauchen Zug- und Härteprüfung.“</div>
+    <div class="a">Beides bekommen Sie bei ZwickRoell aus einer Hand, mit einer Software, einem Servicevertrag und einem Ansprechpartner.</div>
+  </div>
+  <div class="say">
+    <div class="q">„Das Videoextensometer von Instron hat ein großes Sichtfeld.“</div>
+    <div class="a">Mit laserXtens messen Sie sogar ohne Markierung bei 0,07 µm Auflösung, und für den E-Modul liefert der makroXtens II Klasse 0,5 schon ab 20 µm. Wir finden gemeinsam die passende Messtechnik für Ihre Proben.</div>
+  </div>
+  <div class="say">
+    <div class="q">„Wir wollen das ganze Labor vernetzen.“</div>
+    <div class="a">testXpert Analytics zeigt Ihnen Prüfserien in Echtzeit, erkennt Abweichungen früh und unterstützt vorausschauende Wartung. Dazu kommen unsere KI-Funktionen.</div>
+  </div>
+  <h4>Bedarfsfragen, die den Nutzen von ZwickRoell sichtbar machen</h4>
+  <ol class="list">
+    <li>Wie viele verschiedene Prüfarten laufen in Ihrem Labor, und wie viele Softwarelösungen nutzen Sie dafür?</li>
+    <li>Wie wichtig ist Ihnen die Prüfzeit pro Probe bei hohen Kräften?</li>
+    <li>Wie ermitteln Sie heute den E-Modul, und wie zufrieden sind Sie mit der Streuung?</li>
+    <li>Nutzen Sie Ihre Prüfdaten bereits für die Produktionssteuerung?</li>
+    <li>Welche Leistungen erwarten Sie über die gesamte Lebensdauer der Maschine?</li>
+  </ol>
+  <a class="totop" href="#top">Nach oben</a>
+</section>
+
+<!-- 14 -->
+<section id="empfehlungen">
+  <h2><span class="num">14</span>Handlungsempfehlungen</h2>
+  <p class="point">Zuerst eine positive Antwort auf das Garantieargument und die Ansprache der 3300 Besitzer, weil beides sofort Aufträge entscheidet. Danach KI, Batterie und Medizintechnik.</p>
+  <div class="tbl"><table>
+    <thead><tr><th class="num">Nr.</th><th>Maßnahme</th><th>Warum</th><th>Zeitraum</th></tr></thead>
+    <tbody>
+      <tr><td class="num">1</td><td>Lebensdauerpaket mit klarer Gesamtkostenrechnung über 10 Jahre</td><td>Positive Antwort auf die Instron Garantie</td><td>sofort</td></tr>
+      <tr><td class="num">2</td><td>Kampagne für Besitzer älterer Maschinen: retroLine oder Tauschangebot</td><td>3300 Serie läuft seit Januar 2026 aus</td><td>sofort</td></tr>
+      <tr><td class="num">3</td><td>Geschwindigkeit bei voller Kraft und Dehnungsmessung in Datenblättern und Vorführungen herausstellen</td><td>Messbare technische Vorteile der AllroundLine</td><td>sofort</td></tr>
+      <tr><td class="num">4</td><td>KI-Funktionen sichtbar vermarkten</td><td>Klarer Technologievorsprung</td><td>6 Monate</td></tr>
+      <tr><td class="num">5</td><td>Branchenprogramme Batterie und Medizintechnik</td><td>Instron investiert dort am stärksten</td><td>6 bis 12 Monate</td></tr>
+      <tr><td class="num">6</td><td>Bedienung von testXpert für Gelegenheitsnutzer vorführen</td><td>Einfachheit ist im Hochschul- und QS-Markt entscheidend</td><td>6 Monate</td></tr>
+      <tr><td class="num">7</td><td>US-Onlineshop gegen das Einstiegssegment positionieren</td><td>Wachstum im Heimatmarkt von Instron</td><td>12 Monate</td></tr>
+      <tr><td class="num">8</td><td>Gewinn- und Verlustanalyse jeder Ausschreibung gegen Instron im CRM</td><td>Preise und Verlustgründe sind öffentlich nicht verfügbar</td><td>3 Monate</td></tr>
+    </tbody>
+  </table></div>
+  <h4>Offene Fragen</h4>
+  <ul class="list">
+    <li>Wie hoch ist unsere Gewinnquote gegen Instron je Region und Branche?</li>
+    <li>Welche Preisabstände zeigen die letzten 20 verlorenen Angebote?</li>
+    <li>Was umfasst die Instron Garantie genau? Bedingungen beschaffen.</li>
+    <li>Rahmensteifigkeit der AllroundLine intern klären, da Instron diesen Wert veröffentlicht.</li>
+  </ul>
+  <a class="totop" href="#top">Nach oben</a>
+</section>
+
+<!-- 15 -->
+<section id="quellen">
+  <h2><span class="num">15</span>Quellen und Datenlage</h2>
+  <p>Alle Angaben stammen aus öffentlichen Quellen, Stand 19. Oktober 2026. Instrons Umsatz, Marktanteile und Preise sind nicht veröffentlicht. Die Bewertungen in Abschnitt 11 sind Einschätzungen. Technische Werte stammen aus den genannten Datenblättern und gelten bei Raumtemperatur.</p>
+  <ul class="list">
+    <li><a href="https://www.sec.gov/Archives/edgar/data/49826/000119312526127630/2026_ars_filing.pdf" target="_blank" rel="noopener">ITW Geschäftsbericht 2025 (SEC)</a></li>
+    <li><a href="https://www.instron.com/wp-content/uploads/2026/06/6800-series-universal-testing-systems-brochure-en.pdf" target="_blank" rel="noopener">Instron 6800 Broschüre (Juni 2026)</a></li>
+    <li><a href="https://www.instron.com/wp-content/uploads/2024/06/3400-Series-Floor-Model-Universal-Testing-Machines.pdf" target="_blank" rel="noopener">Instron 3400 Datenblatt</a></li>
+    <li><a href="https://www.instron.com/wp-content/uploads/2025/05/ave3-advanced-video-extensometer-data-sheet.pdf" target="_blank" rel="noopener">Instron AVE3 Datenblatt</a></li>
+    <li><a href="https://www.instron.com/wp-content/uploads/2024/07/automatic-contacting-extensometer-autox750-1.pdf" target="_blank" rel="noopener">Instron AutoX750 Datenblatt</a></li>
+    <li><a href="https://www.zwickroell.com/fileadmin/content/Files/SharePoint/user_upload/PI_DE/02_284_Material_Pruefmaschine_AllroundLine_Z005_bis_Z100_PI_DE.pdf" target="_blank" rel="noopener">ZwickRoell AllroundLine Z005 bis Z100</a></li>
+    <li><a href="https://www.zwickroell.com/fileadmin/content/Files/SharePoint/user_upload/PI_DE/08_220_makroXtens_II_PI_DE.pdf" target="_blank" rel="noopener">ZwickRoell makroXtens II</a></li>
+    <li><a href="https://www.zwickroell.com/fileadmin/content/Files/SharePoint/user_upload/PI_DE/03_834_Kraftaufnehmer_Xforce_HP_und_Xforce_K_PI_DE.pdf" target="_blank" rel="noopener">ZwickRoell Xforce Kraftaufnehmer</a></li>
+    <li><a href="https://www.azom.com/article.aspx?ArticleID=19868" target="_blank" rel="noopener">AZoM: Optische Extensometer von ZwickRoell</a></li>
+    <li><a href="https://www.instron.com/ko/resources/news-listing/2026/08/instron-launches-labtronic-evo/" target="_blank" rel="noopener">Instron Labtronic EVO</a></li>
+    <li><a href="https://www.instron.com/en/resources/news-listing/2025/07/bluehill-central-2-software-platform-released/" target="_blank" rel="noopener">Instron Bluehill Central 2</a></li>
+    <li><a href="https://www.instron.com/en/resources/news-listing/?paged=3" target="_blank" rel="noopener">Instron Neuigkeiten 2025</a></li>
+    <li><a href="https://www.qualitymag.com/articles/84571-itw-acquires-instron-corp" target="_blank" rel="noopener">Quality Magazine: ITW übernimmt Instron</a></li>
+    <li><a href="https://www.plasticstoday.com/plastics-processing/in-testing-times-instron-acquires-ceast" target="_blank" rel="noopener">PlasticsToday: CEAST</a></li>
+    <li><a href="https://www.chemie.de/news/150926/" target="_blank" rel="noopener">chemie.de: Instron GmbH Darmstadt</a></li>
+    <li><a href="https://www.heattreattoday.com/?p=18591" target="_blank" rel="noopener">Heat Treat Today: Wilson bei Buehler</a></li>
+    <li><a href="https://www.dri.co.jp/auto/report/qyr/250214-universal-material-testing-machine-global.html" target="_blank" rel="noopener">QYResearch Marktbericht (via DRI)</a></li>
+    <li><a href="https://www.zwickroell.com/de/" target="_blank" rel="noopener">ZwickRoell Homepage</a></li>
+    <li><a href="https://www.zwickroell.com/fileadmin/content/Files/SharePoint/user_upload/Brochures_DE/Ausbildungsbroschuere_2026_neu.pdf" target="_blank" rel="noopener">ZwickRoell Ausbildungsbroschüre 2026</a></li>
+    <li><a href="https://www.zwickroell.com/news-events/news/breaking-ground-in-materials-testing-how-artificial-intelligence-ai-revolutionizes-hole-expansion-tests-to-iso-16630" target="_blank" rel="noopener">ZwickRoell KI-Rissdetektion</a></li>
+  </ul>
+  <a class="totop" href="#top">Nach oben</a>
+</section>
+
+</main>
+</div>
+</div>
+
+<footer><div>ZwickRoell intern · Wettbewerbsanalyse Instron · Stand 19. Oktober 2026 · Erstellt von Hannes Schacher</div></footer>
+
+<script>
+(function(){
+  // Bewertungen für Abschnitt 11: [Dimension, Instron, ZwickRoell, Vorteil]
+  var rows=[
+    ["Breite des Portfolios",4,5,"ZwickRoell"],
+    ["Statische Standardmaschinen",5,5,"offen"],
+    ["Geschwindigkeit bei voller Kraft",3,5,"ZwickRoell"],
+    ["Dehnungsmessung, Auflösung",4,5,"ZwickRoell"],
+    ["Elektrodynamische Ermüdung",5,3,"Instron"],
+    ["Struktur- und Bauteilprüfung",5,4,"Instron"],
+    ["Software Bedienung",5,4,"Instron"],
+    ["Software Tiefe und KI",3,5,"ZwickRoell"],
+    ["Service und Kalibrierung",5,5,"offen"],
+    ["Garantie",5,3,"Instron"],
+    ["Präsenz Nordamerika",5,3,"Instron"],
+    ["Präsenz Europa",3,5,"ZwickRoell"]
+  ];
+  function bar(cls,v){var s='<span class="bar '+cls+'" role="img" aria-label="'+v+' von 5">';for(var i=1;i<=5;i++){s+='<i class="'+(i<=v?'on':'')+'"></i>';}return s+'</span>';}
+  var h='<div class="score-row score-head"><span>Dimension</span><span>ZwickRoell</span><span>Instron</span><span>Vorteil</span></div>';
+  rows.forEach(function(r){
+    var adv=r[3]==="ZwickRoell"?'<span class="win z">ZwickRoell</span>':(r[3]==="Instron"?'<span class="win i">Instron</span>':'<span class="win">offen</span>');
+    h+='<div class="score-row"><span class="lbl">'+r[0]+'</span><span class="cellbar">'+bar('zr',r[2])+'<span class="v">'+r[2]+'</span></span><span class="cellbar">'+bar('in',r[1])+'<span class="v">'+r[1]+'</span></span><span class="adv">'+adv+'</span></div>';
+  });
+  document.getElementById('score').innerHTML=h;
+
+  // Kapitel-Links per Skript, damit sie auch in eingebetteten Ansichten funktionieren
+  var reduce=window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  document.addEventListener('click',function(ev){
+    var a=ev.target.closest && ev.target.closest('a[href^="#"]');
+    if(!a) return;
+    var id=a.getAttribute('href').slice(1);
+    var el=id?document.getElementById(id):null;
+    if(!el) return;
+    ev.preventDefault();
+    var head=document.querySelector('.topbar');
+    var off=(head?head.offsetHeight:0)+16;
+    var y=el.getBoundingClientRect().top+window.pageYOffset-(id==='top'?0:off);
+    window.scrollTo({top:Math.max(0,y),behavior:reduce?'auto':'smooth'});
+    try{history.replaceState(null,'','#'+id);}catch(e){}
+  });
+
+  // Vergleichstabellen: Spalten von ZwickRoell und Wettbewerber in Markenfarbe
+  var wbName=(document.body.getAttribute('data-wettbewerber')||'').toLowerCase();
+  [].forEach.call(document.querySelectorAll('table'),function(t){
+    [].forEach.call(t.querySelectorAll('thead th'),function(th,i){
+      var tx=th.textContent.toLowerCase();
+      var cls=tx.indexOf('zwickroell')>-1?'col-zr':(wbName&&tx.indexOf(wbName)>-1?'col-wb':null);
+      if(!cls) return;
+      th.classList.add(cls);
+      [].forEach.call(t.querySelectorAll('tbody tr'),function(tr){var c=tr.children[i];if(c)c.classList.add(cls);});
+    });
+  });
+
+  // Mitlaufende Navigation markiert den aktuellen Abschnitt
+  var links=[].slice.call(document.querySelectorAll('.sidenav a'));
+  var map={};links.forEach(function(a){map[a.getAttribute('href').slice(1)]=a;});
+  var targets=[].slice.call(document.querySelectorAll('section[id], h3[id]'));
+  if('IntersectionObserver' in window){
+    var io=new IntersectionObserver(function(es){
+      es.forEach(function(e){
+        if(e.isIntersecting){
+          var id=e.target.id, a=map[id];
+          if(!a && e.target.tagName==='H3'){a=null;}
+          if(a){links.forEach(function(l){l.classList.remove('active')});a.classList.add('active');}
+        }
+      });
+    },{rootMargin:'-80px 0px -70% 0px'});
+    targets.forEach(function(t){io.observe(t)});
+  }
+})();
+</script>
+</body>
+</html>
