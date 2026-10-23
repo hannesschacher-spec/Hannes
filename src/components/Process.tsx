@@ -1,58 +1,46 @@
-import { Cable, LineChart, Rocket, Settings2 } from "lucide-react";
 import Reveal from "./Reveal";
+import SectionHeading from "./SectionHeading";
 
 const STEPS = [
   {
-    icon: Settings2,
-    title: "Analyse & Strategie",
-    description: "Wir analysieren Ihren Vertriebsprozess, Ihre Zielgruppe und definieren gemeinsam die Rolle des Agenten.",
+    title: "Erstgespräch",
+    description: "Wir schauen uns an, wie Angebote, Anrufe und Termine bei Ihnen heute laufen und wo am meisten liegen bleibt.",
   },
   {
-    icon: Cable,
-    title: "Training & Integration",
-    description: "Das System wird auf Ihre Daten und Ihren Tonfall trainiert und an CRM, Kalender und Telefonie angebunden.",
+    title: "Einrichtung",
+    description: "Anbindung an CRM, Kalender und Telefonie. Tonfall, Regeln und Freigabewege legen wir gemeinsam fest.",
   },
   {
-    icon: Rocket,
-    title: "Go-Live",
-    description: "Die Automatisierung geht live — fasst Angebote nach, führt E-Mail-Strecken fort und nimmt eingehende Anrufe entgegen.",
+    title: "Testlauf",
+    description: "Zunächst gehen alle Nachrichten zur Freigabe an Ihr Team. Erst wenn die Entwürfe passen, wird mehr automatisiert.",
   },
   {
-    icon: LineChart,
-    title: "Monitoring & Optimierung",
-    description: "Wir überwachen Performance laufend und optimieren Gesprächsführung und Ansprache kontinuierlich.",
+    title: "Laufender Betrieb",
+    description: "Wir beobachten die Ergebnisse, passen Formulierungen an und berichten Ihnen regelmäßig, was nachgefasst wurde.",
   },
 ];
 
 export default function Process() {
   return (
-    <section id="process" className="relative px-6 py-28 lg:px-8">
-      <div className="mx-auto max-w-7xl">
-        <Reveal className="mx-auto max-w-2xl text-center">
-          <span className="text-xs font-semibold tracking-widest text-violet-glow uppercase">Ablauf</span>
-          <h2 className="mt-4 font-display text-3xl font-semibold tracking-tight text-white sm:text-5xl">
-            In vier Schritten <span className="text-gradient">einsatzbereit</span>
-          </h2>
-        </Reveal>
+    <section id="ablauf" className="border-t border-line px-5 py-20 sm:px-8 sm:py-28">
+      <div className="mx-auto max-w-6xl">
+        <SectionHeading
+          eyebrow="Ablauf"
+          title="Klein anfangen, dann ausbauen."
+          intro="Sie behalten von Anfang an die Kontrolle darüber, was in Ihrem Namen verschickt wird."
+        />
 
-        <div className="relative mt-20 grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="absolute top-8 right-0 left-0 hidden h-px bg-gradient-to-r from-transparent via-line to-transparent lg:block" />
-
+        <ol className="mt-14 grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
           {STEPS.map((step, i) => (
-            <Reveal key={step.title} delay={i * 0.1}>
-              <div className="relative flex flex-col items-start">
-                <div className="glass glow-border relative z-10 flex h-16 w-16 items-center justify-center rounded-2xl">
-                  <step.icon className="h-6 w-6 text-cyan-glow" />
-                  <span className="absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-violet-glow to-cyan-glow text-xs font-bold text-ink">
-                    {i + 1}
-                  </span>
-                </div>
-                <h3 className="mt-5 font-display text-lg font-semibold text-white">{step.title}</h3>
-                <p className="mt-2 text-sm text-white/55">{step.description}</p>
-              </div>
-            </Reveal>
+            <li key={step.title} className="border-t border-line-strong pt-5">
+              <Reveal delay={i * 0.05}>
+                <span className="font-display text-4xl font-semibold text-brand tabular">{i + 1}</span>
+                <h3 className="mt-3 text-lg font-semibold text-ink">{step.title}</h3>
+                <p className="mt-2 leading-relaxed text-body">{step.description}</p>
+              </Reveal>
+            </li>
           ))}
-        </div>
+        </ol>
       </div>
     </section>
   );

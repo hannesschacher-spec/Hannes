@@ -1,65 +1,47 @@
-import { Zap } from "lucide-react";
+import Logo from "./Logo";
 
-const COLUMNS = [
-  {
-    title: "Produkt",
-    links: [
-      { label: "Angebotsnachfassen", href: "/#services" },
-      { label: "Newsletter-Automatisierung", href: "/#services" },
-      { label: "Ablauf", href: "/#process" },
-      { label: "Preise", href: "/#pricing" },
-    ],
-  },
-  {
-    title: "Unternehmen",
-    links: [
-      { label: "Vorteile", href: "/#features" },
-      { label: "FAQ", href: "/#faq" },
-      { label: "Kontakt", href: "/#contact" },
-    ],
-  },
+const LINKS = [
+  { label: "Leistungen", href: "/#leistungen" },
+  { label: "Beispiel", href: "/#beispiel" },
+  { label: "Rechner", href: "/#rechner" },
+  { label: "Ablauf", href: "/#ablauf" },
+  { label: "Preise", href: "/#preise" },
+  { label: "Fragen", href: "/#fragen" },
+  { label: "Kontakt", href: "/#kontakt" },
 ];
 
 export default function Footer() {
   return (
-    <footer className="relative border-t border-line/70 px-6 py-16 lg:px-8">
-      <div className="mx-auto max-w-7xl">
-        <div className="grid gap-12 lg:grid-cols-[2fr_1fr_1fr]">
-          <div>
-            <a href="/" className="flex items-center gap-2 font-display text-lg font-semibold text-white">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-violet-glow to-cyan-glow">
-                <Zap className="h-4.5 w-4.5 text-ink" strokeWidth={2.5} />
-              </span>
-              Neural<span className="text-gradient">Sales</span>
-            </a>
-            <p className="mt-4 max-w-sm text-sm text-white/50">
-              Automatisierung für Vertrieb und Marketing: Angebotsnachfassen, E-Mail-Strecken
-              auf Basis bestehender Empfängerlisten und Terminvereinbarung bei eingehenden
-              Anrufen.
+    <footer className="border-t border-line px-5 py-12 sm:px-8">
+      <div className="mx-auto max-w-6xl">
+        <div className="flex flex-col gap-8 md:flex-row md:items-start md:justify-between">
+          <div className="max-w-sm">
+            <Logo />
+            <p className="mt-4 text-sm leading-relaxed text-muted">
+              Angebote nachfassen, Anrufe annehmen, Termine eintragen. Automatisierung für Vertrieb und Innendienst im
+              Mittelstand.
             </p>
           </div>
-
-          {COLUMNS.map((col) => (
-            <div key={col.title}>
-              <p className="text-sm font-semibold text-white">{col.title}</p>
-              <ul className="mt-4 space-y-3">
-                {col.links.map((link) => (
-                  <li key={link.label}>
-                    <a href={link.href} className="text-sm text-white/50 transition-colors hover:text-white">
-                      {link.label}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+          <ul className="grid grid-cols-2 gap-x-10 gap-y-2.5 text-sm sm:grid-cols-3">
+            {LINKS.map((link) => (
+              <li key={link.label}>
+                <a href={link.href} className="text-body hover:text-ink">
+                  {link.label}
+                </a>
+              </li>
+            ))}
+          </ul>
         </div>
 
-        <div className="mt-14 flex flex-col items-center justify-between gap-4 border-t border-line/70 pt-8 text-xs text-white/50 sm:flex-row">
-          <p>© {new Date().getFullYear()} NeuralSales. Alle Rechte vorbehalten.</p>
+        <div className="mt-10 flex flex-col gap-3 border-t border-line pt-6 text-sm text-muted sm:flex-row sm:justify-between">
+          <p>© {new Date().getFullYear()} NeuralSales</p>
           <div className="flex gap-6">
-            <a href="/impressum/" className="hover:text-white/70">Impressum</a>
-            <a href="/datenschutz/" className="hover:text-white/70">Datenschutz</a>
+            <a href="/impressum/" className="hover:text-ink">
+              Impressum
+            </a>
+            <a href="/datenschutz/" className="hover:text-ink">
+              Datenschutz
+            </a>
           </div>
         </div>
       </div>

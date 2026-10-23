@@ -17,18 +17,20 @@ npm run lint       # Oxlint
 
 ## Struktur
 
+Helles, ruhiges Design: Papierton als Hintergrund, Dunkelgrün als einzige Markenfarbe,
+Source Serif 4 für Überschriften und IBM Plex Sans für Fließtext. Farben und Schriften
+stehen als Tokens in `src/index.css`.
+
 Die Seite besteht aus einzelnen Sektionen unter `src/components`:
 
-- `Navbar` — sticky Navigation mit Blur-Effekt beim Scrollen
-- `Hero` — Headline mit rotierendem Wort, animierter Hintergrund
-- `Marquee` — laufendes Band der Kernfähigkeiten
-- `Services` — die zwei Kernangebote (Sales-Agenten & Telefonagenten)
+- `Navbar` — feste Navigation mit Menü für Mobilgeräte
+- `Hero` — Kernaussage und Beispielansicht „Offene Angebote“ mit Nachfass-Entwurf
+- `Services` — Hauptleistung Angebotsnachfassen plus drei weitere Bausteine
+- `Demo` — klickbare Beispielabläufe: Angebot nachfassen und Anruf annehmen
+- `Calculator` — Rechner für das Umsatzpotenzial liegen gebliebener Angebote
 - `Process` — vierstufiger Ablauf
-- `Features` — Vorteile im Kartenraster
 - `Pricing` — dreistufige Preisübersicht
-- `FAQ` — Accordion mit häufigen Fragen
-- `Contact` — Kontaktformular (aktuell rein clientseitig, ohne Backend-Anbindung)
-- `Footer`
+- `FAQ` — häufige Fragen
+- `Contact` — Kontaktformular, versendet über Web3Forms
 
-`BackgroundFX` und `CursorGlow` sorgen für die animierten Glow-/Grid-Effekte im Hintergrund,
-`Reveal` kapselt die Scroll-Reveal-Animationen.
+Gemeinsame Bausteine: `Logo`, `Button`, `SectionHeading`, `Reveal`.

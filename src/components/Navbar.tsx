@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
-import { Menu, X, Zap } from "lucide-react";
+import { Menu, X } from "lucide-react";
+import Logo from "./Logo";
+import Button from "./Button";
 
 const LINKS = [
-  { href: "/#services", label: "Lösungen" },
-  { href: "/#process", label: "Ablauf" },
-  { href: "/#features", label: "Vorteile" },
-  { href: "/#pricing", label: "Preise" },
-  { href: "/#faq", label: "FAQ" },
+  { href: "/#leistungen", label: "Leistungen" },
+  { href: "/#beispiel", label: "Beispiel" },
+  { href: "/#rechner", label: "Rechner" },
+  { href: "/#preise", label: "Preise" },
+  { href: "/#fragen", label: "Fragen" },
 ];
 
 export default function Navbar() {
@@ -15,7 +16,7 @@ export default function Navbar() {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 16);
+    const onScroll = () => setScrolled(window.scrollY > 8);
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
@@ -23,85 +24,54 @@ export default function Navbar() {
 
   return (
     <header
-      className={`fixed top-0 z-50 w-full transition-all duration-300 ${
-        scrolled ? "border-b border-line/80 bg-ink/70 backdrop-blur-xl" : "border-b border-transparent bg-transparent"
+      className={`fixed top-0 z-50 w-full border-b bg-paper/95 backdrop-blur-sm transition-colors ${
+        scrolled || open ? "border-line" : "border-transparent"
       }`}
     >
-      <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-8">
-        <a href="/" className="flex items-center gap-2 font-display text-lg font-semibold tracking-tight text-white">
-          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-violet-glow to-cyan-glow">
-            <Zap className="h-4.5 w-4.5 text-ink" strokeWidth={2.5} />
-          </span>
-          Neural<span className="text-gradient">Sales</span>
-        </a>
+      <nav className="mx-auto flex max-w-6xl items-center justify-between px-5 py-3.5 sm:px-8">
+        <Logo />
 
         <div className="hidden items-center gap-8 lg:flex">
           {LINKS.map((link) => (
-            <a
-              key={link.href}
-              href={link.href}
-              className="text-sm font-medium text-white/70 transition-colors hover:text-white"
-            >
+            <a key={link.href} href={link.href} className="text-[0.95rem] text-body transition-colors hover:text-ink">
               {link.label}
             </a>
           ))}
         </div>
 
-        <div className="hidden items-center gap-3 lg:flex">
-          <a
-            href="/#contact"
-            className="rounded-full bg-white/5 px-4 py-2 text-sm font-medium text-white/90 ring-1 ring-white/10 transition hover:bg-white/10"
-          >
-            Kontakt
-          </a>
-          <a
-            href="/#contact"
-            className="group relative overflow-hidden rounded-full bg-gradient-to-r from-violet-glow to-cyan-glow px-5 py-2 text-sm font-semibold text-ink transition-transform hover:scale-[1.03]"
-          >
-            Demo anfragen
-          </a>
-        </div>
+        <Button href="/#kontakt" className="!py-2.5 max-lg:!hidden">
+          Erstgespräch vereinbaren
+        </Button>
 
         <button
-          className="text-white lg:hidden"
+          className="-mr-2 p-2 text-ink lg:hidden"
           onClick={() => setOpen((v) => !v)}
-          aria-label="Menü öffnen"
+          aria-label={open ? "Menü schließen" : "Menü öffnen"}
+          aria-expanded={open}
         >
           {open ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
         </button>
       </nav>
 
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.25 }}
-            className="overflow-hidden border-t border-line/80 bg-ink/95 backdrop-blur-xl lg:hidden"
-          >
-            <div className="flex flex-col gap-1 px-6 py-4">
-              {LINKS.map((link) => (
-                <a
-                  key={link.href}
-                  href={link.href}
-                  onClick={() => setOpen(false)}
-                  className="rounded-lg px-3 py-3 text-sm font-medium text-white/80 hover:bg-white/5"
-                >
-                  {link.label}
-                </a>
-              ))}
+      {open && (
+        <div className="border-t border-line bg-paper lg:hidden">
+          <div className="flex flex-col px-5 py-3">
+            {LINKS.map((link) => (
               <a
-                href="/#contact"
+                key={link.href}
+                href={link.href}
                 onClick={() => setOpen(false)}
-                className="mt-2 rounded-full bg-gradient-to-r from-violet-glow to-cyan-glow px-4 py-3 text-center text-sm font-semibold text-ink"
+                className="border-b border-line py-3.5 text-ink last:border-0"
               >
-                Demo anfragen
+                {link.label}
               </a>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            ))}
+            <Button href="/#kontakt" className="my-3">
+              Erstgespräch vereinbaren
+            </Button>
+          </div>
+        </div>
+      )}
     </header>
   );
 }

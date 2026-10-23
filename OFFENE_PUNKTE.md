@@ -105,3 +105,18 @@ Richtigkeit für dein tatsächliches Geschäftsmodell prüfen:
   reduzierten Kontrast. Die eigentlichen Feld-Labels erfüllen WCAG AA,
   die Platzhalter selbst nicht vollständig — unkritisch, da nicht die
   primäre Informationsquelle, aber erwähnenswert.
+
+## 8. Nach dem Design-Umbau prüfen
+
+- **Kontakt:** Auf der Seite steht jetzt „Wir melden uns innerhalb von zwei
+  Werktagen“ (Ablauf neben dem Formular und Bestätigung nach dem Absenden).
+  Nur stehen lassen, wenn du das zuverlässig schaffst.
+- **Preise:** Das Paket „Enterprise“ heißt jetzt „Individuell“. Die
+  ungeprüften Aussagen „Beliebig viele Agenten & Kanäle“ und „SLA nach
+  Vereinbarung“ sind entfernt, „Fester Ansprechpartner“ ist geblieben.
+- **FAQ:** Die Angabe „typischerweise wenige Wochen“ zur Einrichtungsdauer
+  ist entfernt. Dort steht jetzt, dass es einen Zeitplan mit dem Angebot gibt.
+- **Beispiele und Rechner:** Die Firmen in Hero und Beispiel-Abläufen sind
+  erfunden und so gekennzeichnet. Die Standardwerte im Rechner (40 Angebote,
+  8.000 €, 40 % ohne Nachfassen, 5 % zusätzliche Abschlüsse) sind Annahmen,
+  bei Bedarf in `src/components/Calculator.tsx` anpassen.
