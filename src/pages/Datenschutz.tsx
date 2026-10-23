@@ -1,28 +1,28 @@
 export default function Datenschutz() {
   return (
-    <section className="relative px-6 pt-36 pb-28 lg:px-8">
+    <section className="px-5 pt-32 pb-24 sm:px-8 sm:pt-36">
       <div className="mx-auto max-w-3xl">
-        <div className="mb-10 rounded-2xl border border-amber-500/30 bg-amber-500/10 px-5 py-4 text-sm text-amber-200">
+        <div className="mb-10 rounded-md border border-ochre/30 bg-ochre-soft px-5 py-4 text-sm text-ochre">
           Entwurf. Vor Veröffentlichung anwaltlich prüfen lassen. Abschnitte mit dem Hinweis
           „TODO_PRUEFEN" enthalten Angaben, die noch verifiziert oder ergänzt werden müssen.
         </div>
 
-        <span className="text-xs font-semibold tracking-widest text-cyan-glow uppercase">Rechtliches</span>
-        <h1 className="mt-4 font-display text-3xl font-semibold tracking-tight text-white sm:text-4xl">
+        <span className="text-sm font-medium text-brand">Rechtliches</span>
+        <h1 className="mt-4 font-display text-4xl font-semibold tracking-tight text-ink sm:text-5xl">
           Datenschutzerklärung
         </h1>
-        <p className="mt-2 text-sm text-white/50">Informationen gemäß Art. 13 DSGVO</p>
+        <p className="mt-2 text-muted">Informationen gemäß Art. 13 DSGVO</p>
 
-        <div className="mt-10 space-y-8 text-sm leading-relaxed text-white/70">
+        <div className="mt-10 space-y-8 leading-relaxed text-body">
           <section>
-            <h2 className="font-display text-lg font-semibold text-white">1. Verantwortlicher</h2>
+            <h2 className="font-display text-xl font-semibold text-ink">1. Verantwortlicher</h2>
             <p className="mt-3">
               Verantwortlicher im Sinne der Datenschutz-Grundverordnung (DSGVO) ist:
               <br />
               [NAME], [STRASSE, HAUSNUMMER], [PLZ, ORT], [E-MAIL]
               <br />
               Weitere Angaben finden Sie im{" "}
-              <a href="/impressum/" className="text-cyan-glow hover:underline">
+              <a href="/impressum/" className="text-brand underline underline-offset-2">
                 Impressum
               </a>
               .
@@ -30,7 +30,7 @@ export default function Datenschutz() {
           </section>
 
           <section>
-            <h2 className="font-display text-lg font-semibold text-white">2. Hosting</h2>
+            <h2 className="font-display text-xl font-semibold text-ink">2. Hosting</h2>
             <p className="mt-3">
               Diese Website wird bei Hostinger gehostet. TODO_PRUEFEN: genaue Anbieterbezeichnung,
               Anschrift des Hosting-Anbieters, Serverstandort sowie Bestehen eines
@@ -39,7 +39,7 @@ export default function Datenschutz() {
           </section>
 
           <section>
-            <h2 className="font-display text-lg font-semibold text-white">3. Server-Logfiles</h2>
+            <h2 className="font-display text-xl font-semibold text-ink">3. Server-Logfiles</h2>
             <p className="mt-3">
               Beim Aufruf dieser Website erhebt der Hosting-Anbieter automatisiert Informationen,
               die Ihr Browser übermittelt (sogenannte Server-Logfiles). Dazu gehören typischerweise
@@ -52,7 +52,7 @@ export default function Datenschutz() {
           </section>
 
           <section>
-            <h2 className="font-display text-lg font-semibold text-white">4. Kontaktformular</h2>
+            <h2 className="font-display text-xl font-semibold text-ink">4. Kontaktformular</h2>
             <p className="mt-3">
               Wenn Sie uns über das Kontaktformular Anfragen zukommen lassen, werden die von Ihnen
               angegebenen Daten (Name, Unternehmen, E-Mail-Adresse, Nachricht) zum Zweck der
@@ -66,7 +66,7 @@ export default function Datenschutz() {
           </section>
 
           <section>
-            <h2 className="font-display text-lg font-semibold text-white">5. Eingesetzte Dienste</h2>
+            <h2 className="font-display text-xl font-semibold text-ink">5. Eingesetzte Dienste</h2>
             <ul className="mt-3 list-disc space-y-1.5 pl-5">
               <li>Hosting: Hostinger — TODO_PRUEFEN</li>
               <li>Kontaktformular-Versand: Web3Forms — TODO_PRUEFEN</li>
@@ -78,7 +78,7 @@ export default function Datenschutz() {
           </section>
 
           <section>
-            <h2 className="font-display text-lg font-semibold text-white">6. Ihre Rechte</h2>
+            <h2 className="font-display text-xl font-semibold text-ink">6. Ihre Rechte</h2>
             <p className="mt-3">
               Sie haben im Rahmen der gesetzlichen Voraussetzungen das Recht auf Auskunft (Art. 15
               DSGVO), Berichtigung (Art. 16 DSGVO), Löschung (Art. 17 DSGVO), Einschränkung der
@@ -89,7 +89,7 @@ export default function Datenschutz() {
           </section>
 
           <section>
-            <h2 className="font-display text-lg font-semibold text-white">7. Beschwerderecht bei einer Aufsichtsbehörde</h2>
+            <h2 className="font-display text-xl font-semibold text-ink">7. Beschwerderecht bei einer Aufsichtsbehörde</h2>
             <p className="mt-3">
               Sie haben das Recht, sich bei einer Datenschutzaufsichtsbehörde über die
               Verarbeitung Ihrer personenbezogenen Daten zu beschweren. Zuständig ist in der Regel
