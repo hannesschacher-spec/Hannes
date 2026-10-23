@@ -1,105 +1,101 @@
-import { motion } from "framer-motion";
-import { ArrowRight, Phone, Sparkles, TrendingUp } from "lucide-react";
-import { useEffect, useState } from "react";
+import { ArrowRight, Check } from "lucide-react";
+import Button from "./Button";
 
-const ROTATING_WORDS = ["Vertrieb", "Terminplanung", "Kundenakquise", "Kaltakquise"];
+// Beispieldaten für die Vorschau. Firmen und Beträge sind frei erfunden.
+const QUOTES = [
+  { id: "AN-2026-0412", customer: "Brenner Fördertechnik GmbH", value: "18.400 €", days: 9, status: "Entwurf bereit" },
+  { id: "AN-2026-0398", customer: "Hofmann & Söhne KG", value: "7.250 €", days: 14, status: "Entwurf bereit" },
+  { id: "AN-2026-0371", customer: "Kessler Antriebe AG", value: "42.900 €", days: 21, status: "Rückmeldung erhalten" },
+  { id: "AN-2026-0366", customer: "Wagner Industrieservice", value: "3.980 €", days: 23, status: "Nachgefasst" },
+];
 
-function useRotatingWord() {
-  const [index, setIndex] = useState(0);
-  useEffect(() => {
-    const id = setInterval(() => setIndex((i) => (i + 1) % ROTATING_WORDS.length), 2400);
-    return () => clearInterval(id);
-  }, []);
-  return ROTATING_WORDS[index];
+const STATUS_STYLES: Record<string, string> = {
+  "Entwurf bereit": "bg-ochre-soft text-ochre",
+  Nachgefasst: "bg-sunk text-body",
+  "Rückmeldung erhalten": "bg-brand-soft text-brand",
+};
+
+function QuotePanel() {
+  return (
+    <div className="rounded-lg border border-line bg-surface shadow-[0_1px_0_rgba(23,32,28,0.04),0_12px_32px_-16px_rgba(23,32,28,0.18)]">
+      <div className="flex items-center justify-between border-b border-line px-5 py-3.5">
+        <div>
+          <p className="text-sm font-semibold text-ink">Offene Angebote</p>
+          <p className="text-xs text-muted">älter als 7 Tage, ohne Rückmeldung</p>
+        </div>
+        <span className="rounded bg-sunk px-2 py-1 text-xs font-medium text-body tabular">4 von 31</span>
+      </div>
+
+      <ul>
+        {QUOTES.map((q) => (
+          <li key={q.id} className="grid grid-cols-[1fr_auto] gap-x-4 gap-y-1 border-b border-line px-5 py-3.5 last:border-0">
+            <p className="truncate text-sm font-medium text-ink">{q.customer}</p>
+            <p className="text-right text-sm font-medium text-ink tabular">{q.value}</p>
+            <p className="text-xs text-muted tabular">
+              {q.id} · seit {q.days} Tagen offen
+            </p>
+            <p className="text-right">
+              <span className={`rounded px-1.5 py-0.5 text-[0.7rem] font-medium ${STATUS_STYLES[q.status]}`}>{q.status}</span>
+            </p>
+          </li>
+        ))}
+      </ul>
+
+      <div className="border-t border-line bg-paper/60 px-5 py-4">
+        <p className="text-xs font-medium text-muted">Entwurf zu AN-2026-0412</p>
+        <p className="mt-2 text-sm leading-relaxed text-body">
+          Guten Tag Herr Brenner, Sie hatten bei uns zwei Gurtförderer für die neue Halle angefragt. Passt die
+          Lieferzeit von sechs Wochen in Ihren Bauplan, oder sollen wir eine Variante mit kürzerer Lieferzeit
+          rechnen?
+        </p>
+        <div className="mt-3 flex gap-2">
+          <span className="inline-flex items-center gap-1 rounded bg-brand px-2.5 py-1 text-xs font-medium text-brand-ink">
+            <Check className="h-3 w-3" /> Freigeben
+          </span>
+          <span className="rounded border border-line-strong px-2.5 py-1 text-xs font-medium text-body">Bearbeiten</span>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export default function Hero() {
-  const word = useRotatingWord();
-
   return (
-    <section id="top" className="relative flex min-h-screen items-center justify-center px-6 pt-32 pb-20 lg:px-8">
-      <div className="mx-auto max-w-5xl text-center">
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="glass mx-auto mb-8 flex w-fit items-center gap-2 rounded-full px-4 py-1.5 text-xs font-medium text-white/80"
-        >
-          <Sparkles className="h-3.5 w-3.5 text-cyan-glow" />
-          KI-Agenten für Vertrieb & Telefonie
-        </motion.div>
+    <section id="top" className="px-5 pt-28 pb-16 sm:px-8 sm:pt-36 sm:pb-24">
+      <div className="mx-auto grid max-w-6xl items-center gap-14 lg:grid-cols-[1.05fr_1fr] lg:gap-16">
+        <div>
+          <p className="text-sm font-medium text-brand">Für Vertrieb und Innendienst im Mittelstand</p>
+          <h1 className="mt-4 font-display text-[2.6rem] leading-[1.08] font-semibold tracking-tight text-ink text-balance sm:text-6xl">
+            Kein Angebot bleibt mehr unbeantwortet.
+          </h1>
+          <p className="mt-6 max-w-xl text-lg leading-relaxed text-body text-pretty">
+            NeuralSales findet offene Angebote in Ihrem CRM, schreibt zu jedem eine passende Nachfrage und legt sie
+            Ihrem Team zur Freigabe vor. Anrufe, die niemand annehmen kann, nimmt ein Telefonassistent entgegen und
+            trägt den Termin direkt in Ihren Kalender ein.
+          </p>
 
-        <motion.h1
-          initial={{ opacity: 0, y: 18 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.1 }}
-          className="font-display text-4xl leading-[1.08] font-semibold tracking-tight text-white sm:text-6xl lg:text-7xl"
-        >
-          KI-Agenten für
-          <br />
-          <span className="relative inline-block h-[1.15em] overflow-hidden align-top">
-            <motion.span
-              key={word}
-              initial={{ y: 40, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: -40, opacity: 0 }}
-              transition={{ duration: 0.5, ease: "easeOut" }}
-              className="text-gradient-animated inline-block"
-            >
-              {word}
-            </motion.span>
-          </span>
-        </motion.h1>
+          <div className="mt-9 flex flex-col gap-3 sm:flex-row">
+            <Button href="/#kontakt">
+              Erstgespräch vereinbaren <ArrowRight className="h-4 w-4" />
+            </Button>
+            <Button href="/#rechner" variant="secondary">
+              Potenzial berechnen
+            </Button>
+          </div>
 
-        <motion.p
-          initial={{ opacity: 0, y: 18 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="mx-auto mt-6 max-w-2xl text-balance text-lg text-white/60"
-        >
-          NeuralSales baut KI-Agenten, die Leads qualifizieren, Kunden ansprechen und
-          Termine direkt am Telefon buchen — rund um die Uhr, ohne zusätzliches Personal.
-        </motion.p>
+          <ul className="mt-10 flex flex-col gap-2 text-sm text-muted sm:flex-row sm:flex-wrap sm:gap-x-6">
+            {["Freigabe durch Ihr Team", "Verarbeitung in der EU", "Anbindung an Ihr bestehendes CRM"].map((item) => (
+              <li key={item} className="flex items-center gap-2">
+                <Check className="h-4 w-4 text-brand" /> {item}
+              </li>
+            ))}
+          </ul>
+        </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 18 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.3 }}
-          className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row"
-        >
-          <a
-            href="#contact"
-            className="group flex items-center gap-2 rounded-full bg-gradient-to-r from-violet-glow to-cyan-glow px-7 py-3.5 text-sm font-semibold text-ink shadow-[0_0_40px_-8px_rgba(139,92,246,0.6)] transition-transform hover:scale-[1.04]"
-          >
-            Kostenlose Demo anfragen
-            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-          </a>
-          <a
-            href="#services"
-            className="glass flex items-center gap-2 rounded-full px-7 py-3.5 text-sm font-medium text-white/90 transition hover:bg-white/10"
-          >
-            Lösungen entdecken
-          </a>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.45 }}
-          className="mx-auto mt-20 grid max-w-3xl grid-cols-1 gap-4 sm:grid-cols-3"
-        >
-          {[
-            { icon: TrendingUp, label: "Mehr qualifizierte Leads", sub: "durch automatisierte Ansprache" },
-            { icon: Phone, label: "Telefonate rund um die Uhr", sub: "für Terminvereinbarungen" },
-            { icon: Sparkles, label: "Sofort einsatzbereit", sub: "trainiert auf Ihre Prozesse" },
-          ].map((item, i) => (
-            <div key={i} className="glass glow-border relative rounded-2xl p-5 text-left">
-              <item.icon className="mb-3 h-5 w-5 text-cyan-glow" />
-              <p className="text-sm font-semibold text-white">{item.label}</p>
-              <p className="mt-1 text-xs text-white/50">{item.sub}</p>
-            </div>
-          ))}
-        </motion.div>
+        <div>
+          <QuotePanel />
+          <p className="mt-3 text-xs text-muted">Beispielansicht mit erfundenen Daten.</p>
+        </div>
       </div>
     </section>
   );

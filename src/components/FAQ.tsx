@@ -1,28 +1,30 @@
-import { AnimatePresence, motion } from "framer-motion";
-import { ChevronDown } from "lucide-react";
+import { Plus } from "lucide-react";
 import { useState } from "react";
-import Reveal from "./Reveal";
 
 const FAQS = [
   {
-    q: "Wie schnell ist ein Agent einsatzbereit?",
-    a: "Je nach Umfang und Anzahl der Integrationen dauert die Einrichtung typischerweise wenige Wochen — von der Analyse über das Training bis zum Go-Live.",
+    q: "Verschickt das System Nachrichten ohne unser Wissen?",
+    a: "Nein, solange Sie das nicht ausdrücklich wollen. Am Anfang geht jeder Entwurf zur Freigabe an Ihr Team. Ob und für welche Fälle später automatisch versendet wird, entscheiden Sie.",
   },
   {
-    q: "Ersetzt der Agent mein Vertriebsteam?",
-    a: "Nein. Der Agent übernimmt zeitintensive, repetitive Aufgaben wie Erstansprache und Terminplanung, damit sich Ihr Team auf Abschlüsse und Beziehungen konzentrieren kann.",
+    q: "Ersetzt das unser Vertriebsteam?",
+    a: "Nein. Es übernimmt das Heraussuchen, Nachfragen und Terminieren, also die Arbeit, für die im Alltag die Zeit fehlt. Gespräche, Verhandlungen und Abschlüsse bleiben bei Ihren Leuten.",
   },
   {
-    q: "Kann der Telefonagent auf Deutsch sprechen?",
-    a: "Ja. Die Telefonagenten werden mehrsprachig trainiert und klingen dabei natürlich — auf Deutsch ebenso wie in weiteren Sprachen nach Bedarf.",
+    q: "Mit welchen Systemen funktioniert das?",
+    a: "Mit CRM-, Angebots-, Kalender- und Telefoniesystemen, die eine Schnittstelle anbieten. Was bei Ihnen im Einsatz ist und wie aufwendig die Anbindung wird, klären wir im Erstgespräch.",
   },
   {
-    q: "Wie läuft die Integration in bestehende Systeme ab?",
-    a: "Wir binden die Agenten an Ihr CRM, Ihren Kalender und Ihre Telefonie an. Der genaue Integrationsaufwand hängt von Ihrer bestehenden Systemlandschaft ab und wird im Erstgespräch geklärt.",
+    q: "Wie lange dauert die Einrichtung?",
+    a: "Das hängt vor allem von der Zahl der Systeme ab, die angebunden werden. Einen konkreten Zeitplan bekommen Sie mit dem Angebot.",
   },
   {
-    q: "Ist der Einsatz DSGVO-konform?",
-    a: "Ja. Wir setzen auf datenschutzkonforme Prozesse nach europäischen Standards und stimmen die konkrete Umsetzung mit Ihnen ab.",
+    q: "Spricht der Telefonassistent Deutsch?",
+    a: "Ja, und auf Wunsch weitere Sprachen. Er stellt sich zu Beginn jedes Gesprächs als KI-System vor.",
+  },
+  {
+    q: "Wie steht es um den Datenschutz?",
+    a: "Wir arbeiten nach DSGVO und stimmen mit Ihnen ab, welche Daten verarbeitet werden und wo. E-Mail-Strecken laufen nur an Empfänger mit dokumentierter Einwilligung.",
   },
 ];
 
@@ -30,45 +32,36 @@ export default function FAQ() {
   const [open, setOpen] = useState<number | null>(0);
 
   return (
-    <section id="faq" className="relative px-6 py-28 lg:px-8">
-      <div className="mx-auto max-w-3xl">
-        <Reveal className="text-center">
-          <span className="text-xs font-semibold tracking-widest text-cyan-glow uppercase">FAQ</span>
-          <h2 className="mt-4 font-display text-3xl font-semibold tracking-tight text-white sm:text-5xl">
-            Häufige <span className="text-gradient">Fragen</span>
+    <section id="fragen" className="border-t border-line px-5 py-20 sm:px-8 sm:py-28">
+      <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16">
+        <div>
+          <p className="text-sm font-medium text-brand">Fragen</p>
+          <h2 className="mt-3 font-display text-3xl leading-tight font-semibold tracking-tight text-ink sm:text-[2.6rem]">
+            Was Kunden vorher wissen wollen.
           </h2>
-        </Reveal>
+          <p className="mt-5 leading-relaxed text-body">
+            Ihre Frage ist nicht dabei?{" "}
+            <a href="/#kontakt" className="font-medium text-brand underline underline-offset-4 hover:text-brand-hover">
+              Schreiben Sie uns.
+            </a>
+          </p>
+        </div>
 
-        <div className="mt-14 space-y-3">
+        <div className="border-t border-line-strong">
           {FAQS.map((item, i) => {
             const isOpen = open === i;
             return (
-              <Reveal key={item.q} delay={i * 0.05}>
-                <div className="overflow-hidden rounded-2xl border border-line bg-surface/60">
-                  <button
-                    onClick={() => setOpen(isOpen ? null : i)}
-                    className="flex w-full items-center justify-between gap-4 px-6 py-5 text-left"
-                  >
-                    <span className="font-medium text-white">{item.q}</span>
-                    <ChevronDown
-                      className={`h-5 w-5 shrink-0 text-white/50 transition-transform duration-300 ${isOpen ? "rotate-180 text-cyan-glow" : ""}`}
-                    />
-                  </button>
-                  <AnimatePresence initial={false}>
-                    {isOpen && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: "auto", opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.25, ease: "easeInOut" }}
-                        className="overflow-hidden"
-                      >
-                        <p className="px-6 pb-5 text-sm leading-relaxed text-white/60">{item.a}</p>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              </Reveal>
+              <div key={item.q} className="border-b border-line-strong">
+                <button
+                  onClick={() => setOpen(isOpen ? null : i)}
+                  aria-expanded={isOpen}
+                  className="flex w-full items-center justify-between gap-6 py-5 text-left"
+                >
+                  <span className="text-lg font-medium text-ink">{item.q}</span>
+                  <Plus className={`h-5 w-5 shrink-0 text-brand transition-transform duration-200 ${isOpen ? "rotate-45" : ""}`} />
+                </button>
+                {isOpen && <p className="max-w-2xl pb-6 leading-relaxed text-body">{item.a}</p>}
+              </div>
             );
           })}
         </div>
