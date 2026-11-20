@@ -57,6 +57,7 @@ if (!$user):
   <button class="btn primary" type="submit">Anmelden</button>
   <p class="muted small">Passwort vergessen? Bitte bei der Administratorin oder dem Administrator melden.</p>
 </form>
+<p class="muted small">Version <?= h(APP_VERSION) ?></p>
 </main></body></html>
 <?php exit; endif; ?><!doctype html>
 <html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -122,6 +123,7 @@ if (!$user):
     <section id="view-anfragen" hidden></section>
     <section id="view-benutzer" hidden></section>
   </main>
+  <footer class="muted small">Platzbörse · Version <?= h(APP_VERSION) ?></footer>
 </div>
 
 <dialog id="dlg-haus" class="narrow">
