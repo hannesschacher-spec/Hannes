@@ -1,0 +1,19 @@
+Options -Indexes
+DirectoryIndex index.php
+
+# Interne Dateien nicht über das Internet ausliefern
+<FilesMatch "^(config|lib)\.php$|\.(sql|md|txt|log)$">
+  Require all denied
+</FilesMatch>
+
+# Immer verschlüsselt (https) aufrufen
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteCond %{HTTPS} off
+  RewriteCond %{HTTP:X-Forwarded-Proto} !https
+  RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+</IfModule>
+
+<IfModule mod_headers.c>
+  Header always set Strict-Transport-Security "max-age=31536000"
+</IfModule>
