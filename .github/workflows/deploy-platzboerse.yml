@@ -37,7 +37,7 @@ jobs:
           password: ${{ secrets.PB_FTP_PASSWORD }}
           protocol: ftps
           local-dir: ./platzboerse/
-          server-dir: ./public_html/
+          server-dir: ./domains/chosen-royalblue-coyote-79.hostingersite.com/public_html/
           exclude: |
             **/.git*
             **/.git*/**
