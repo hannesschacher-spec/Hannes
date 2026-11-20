@@ -33,7 +33,7 @@ jobs:
         run: |
           for d in "" "public_html/" "public_html/public_html/"; do
             echo "===== /$d ====="
-            curl -s --ssl-reqd --user "$U:$P" "ftp://$H/$d" || echo "(nicht vorhanden)"
+            curl -sS --ssl-reqd --list-only --connect-timeout 20 --user "$(echo "$U" | xargs):$P" "ftp://$(echo "$H" | xargs)/$d" 2>&1 || true
           done
 
       - name: PHP-Dateien auf Fehler prüfen
