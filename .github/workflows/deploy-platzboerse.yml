@@ -24,6 +24,18 @@ jobs:
       - name: Code auschecken
         uses: actions/checkout@v4
 
+      - name: Ordner auf dem Server anzeigen (Diagnose)
+        continue-on-error: true
+        env:
+          H: ${{ secrets.PB_FTP_SERVER }}
+          U: ${{ secrets.PB_FTP_USERNAME }}
+          P: ${{ secrets.PB_FTP_PASSWORD }}
+        run: |
+          for d in "" "public_html/" "public_html/public_html/"; do
+            echo "===== /$d ====="
+            curl -s --ssl-reqd --user "$U:$P" "ftp://$H/$d" || echo "(nicht vorhanden)"
+          done
+
       - name: PHP-Dateien auf Fehler prüfen
         run: for f in platzboerse/*.php; do php -l "$f"; done
 
