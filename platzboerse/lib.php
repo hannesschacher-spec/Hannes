@@ -7,7 +7,7 @@ if (!is_file(__DIR__ . '/config.php')) {
 }
 require __DIR__ . '/config.php';
 
-const APP_VERSION = '1.1';
+const APP_VERSION = '1.2';
 
 const ROLES = ['admin', 'mitarbeit', 'lesen'];
 const STATUS = ['offen', 'rueckruf', 'angeboten', 'zugesagt', 'abgeschlossen'];

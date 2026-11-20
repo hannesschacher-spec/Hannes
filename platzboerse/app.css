@@ -8,12 +8,7 @@
   --f-num:ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
   --r:10px; color-scheme:light;
 }
-@media (prefers-color-scheme: dark){:root{
-  --bg:#111614; --surface:#19201d; --sunk:#141a18; --ink:#e5ebe8; --muted:#9aa7a1; --line:#2b3531;
-  --accent:#72b2e0; --accent-soft:#1b2c39; --on-accent:#0b1620;
-  --free:#5cc48a; --free-soft:#163024; --warn:#e3a84c; --warn-soft:#352a14; --danger:#ec7b70; --danger-soft:#3a1d1a;
-  --h-rot:#e8675e; --h-blau:#5f97dd; --h-gruen:#5fb877; --h-gelb:#e7c247; --h-orange:#ef9a55; --h-violett:#a585d1; --h-grau:#9aa9af; --h-braun:#b8866a;
-  color-scheme:dark}}
+/* Immer helles Erscheinungsbild, auch wenn das Gerät auf dunkel steht */
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-ui);font-size:15px;line-height:1.5}
