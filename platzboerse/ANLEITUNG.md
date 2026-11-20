@@ -62,3 +62,19 @@ Hostinger-Paket «Business». Das Upload-Paket liegt in `dist-platzboerse/platzb
 
 Neue Version: ZIP hochladen und entpacken, vorhandene Dateien überschreiben.
 `config.php` ist nicht im Paket und bleibt erhalten.
+
+## Automatische Updates über GitHub
+
+Jede Änderung im Ordner `platzboerse/`, die auf den Branch `main` kommt, wird von
+GitHub automatisch zu Hostinger hochgeladen (`.github/workflows/deploy-platzboerse.yml`).
+
+Einmalig nötig: in GitHub unter **Settings → Secrets and variables → Actions** drei
+Secrets anlegen, mit den Werten aus hPanel → Website → Dateien → **FTP-Konten**:
+
+| Secret-Name | Wert |
+|---|---|
+| `PB_FTP_SERVER` | FTP-Hostname (bzw. IP) |
+| `PB_FTP_USERNAME` | FTP-Benutzername |
+| `PB_FTP_PASSWORD` | FTP-Passwort |
+
+Den Fortschritt sieht man in GitHub unter **Actions**. Grüner Haken = online.

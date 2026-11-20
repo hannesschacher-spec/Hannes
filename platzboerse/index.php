@@ -63,7 +63,7 @@ if (!$user):
 <meta name="csrf" content="<?= h($_SESSION['csrf']) ?>">
 <meta name="user" content="<?= h(json_encode(['id' => (int)$user['id'], 'name' => $user['name'], 'role' => $user['role']], JSON_UNESCAPED_UNICODE)) ?>">
 <title>Platzbörse</title>
-<link rel="stylesheet" href="app.css?v=1">
+<link rel="stylesheet" href="app.css?v=<?= (int)@filemtime(__DIR__ . "/app.css") ?>">
 </head>
 <body>
 <div class="wrap">
@@ -181,5 +181,5 @@ if (!$user):
 
 <dialog id="dlg-anfrage"><div class="dlg" id="anfrage"></div></dialog>
 <div class="toast" id="toast" hidden></div>
-<script src="app.js?v=1"></script>
+<script src="app.js?v=<?= (int)@filemtime(__DIR__ . "/app.js") ?>"></script>
 </body></html>

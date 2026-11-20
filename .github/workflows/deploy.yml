@@ -3,6 +3,10 @@ name: Deploy to Hostinger
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - 'platzboerse/**'
+      - 'dist-platzboerse/**'
+      - '.github/workflows/deploy-platzboerse.yml'
 
 permissions:
   contents: read
