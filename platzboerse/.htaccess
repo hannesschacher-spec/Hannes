@@ -17,3 +17,14 @@ DirectoryIndex index.php
 <IfModule mod_headers.c>
   Header always set Strict-Transport-Security "max-age=31536000"
 </IfModule>
+
+# Seiten nicht zwischenspeichern (Hostinger/LiteSpeed-Cache und CDN)
+<IfModule LiteSpeed>
+  CacheLookup off
+</IfModule>
+<IfModule mod_headers.c>
+  <FilesMatch "\.php$">
+    Header always set Cache-Control "no-store, no-cache, must-revalidate, max-age=0"
+    Header always set X-LiteSpeed-Cache-Control "no-cache"
+  </FilesMatch>
+</IfModule>

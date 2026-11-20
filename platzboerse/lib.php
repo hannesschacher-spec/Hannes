@@ -35,6 +35,8 @@ function db(): PDO
 function security_headers(): void
 {
     header('X-Frame-Options: DENY');
+    header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+    header('X-LiteSpeed-Cache-Control: no-cache');
     header('X-Content-Type-Options: nosniff');
     header('Referrer-Policy: same-origin');
     header("Content-Security-Policy: default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'");
