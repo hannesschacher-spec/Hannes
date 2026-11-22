@@ -1,12 +1,13 @@
 name: NeuralSales zu Hostinger hochladen
 
 # Baut die NeuralSales-Website (Ordner neuralsales/) und lädt sie zu Hostinger hoch.
+# Vorerst nur von Hand startbar (Actions → «Run workflow»), weil die Website bei Hostinger
+# noch nicht eingerichtet ist (Secrets FTP_SERVER, FTP_USERNAME, FTP_PASSWORD fehlen).
+# Danach den automatischen Start wieder einschalten:
+#   push:
+#     branches: [main]
+#     paths: ['neuralsales/**', '.github/workflows/deploy-neuralsales.yml']
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'neuralsales/**'
-      - '.github/workflows/deploy-neuralsales.yml'
   workflow_dispatch:
 
 permissions:
