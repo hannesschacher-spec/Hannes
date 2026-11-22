@@ -47,7 +47,7 @@ bewusst nicht ergänzt, da unklar, ob es für dieses Geschäftsmodell greift.
 
 ## 4. GitHub Actions Deploy: Secrets anlegen
 
-Der neue Workflow (`.github/workflows/deploy.yml`) baut die Seite bei jedem
+Der neue Workflow (`.github/workflows/deploy-neuralsales.yml`) baut die Seite bei jedem
 Push auf `main` und lädt sie per FTP zu Hostinger hoch. Dafür musst du in
 GitHub unter **Repository → Settings → Secrets and variables → Actions →
 New repository secret** drei Secrets anlegen:
@@ -81,7 +81,7 @@ Wege leicht unterschiedliche Ergebnisse liefern. Bitte entscheide:
 
 - entweder Hostingers GitHub-Auto-Deploy deaktivieren und nur den neuen
   FTP-Workflow nutzen, oder
-- den neuen `.github/workflows/deploy.yml` wieder entfernen/deaktivieren
+- den neuen `.github/workflows/deploy-neuralsales.yml` wieder entfernen/deaktivieren
   und bei Hostingers eigener Anbindung bleiben.
 
 ## 6. Inhaltliche Prüfung bestehender Aussagen

@@ -1,23 +1,27 @@
-name: Deploy to Hostinger
+name: NeuralSales zu Hostinger hochladen
 
+# Baut die NeuralSales-Website (Ordner neuralsales/) und lädt sie zu Hostinger hoch.
 on:
   push:
     branches: [main]
-    # Andere Apps haben eigene Workflows.
-    paths-ignore:
-      - 'angebote/**'
-      - '.github/workflows/deploy-angebote.yml'
-      - 'platzboerse/**'
-      - 'dist-platzboerse/**'
-      - 'skills/**'
-      - '.github/workflows/deploy-platzboerse.yml'
+    paths:
+      - 'neuralsales/**'
+      - '.github/workflows/deploy-neuralsales.yml'
+  workflow_dispatch:
 
 permissions:
   contents: read
 
+concurrency:
+  group: deploy-neuralsales
+  cancel-in-progress: false
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: neuralsales
     steps:
       - name: Code auschecken
         uses: actions/checkout@v4
@@ -27,6 +31,7 @@ jobs:
         with:
           node-version: 22
           cache: npm
+          cache-dependency-path: neuralsales/package-lock.json
 
       - name: Abhängigkeiten installieren
         run: npm ci
@@ -35,12 +40,12 @@ jobs:
         run: npm run build
 
       # TODO_PRUEFEN: server-dir hängt vom FTP-Konto ab (Hauptdomain vs.
-      # Addon-Domain/Subdomain bei Hostinger). Siehe OFFENE_PUNKTE.md.
+      # Addon-Domain/Subdomain bei Hostinger). Siehe neuralsales/OFFENE_PUNKTE.md.
       - name: Per FTP auf Hostinger übertragen
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: ./dist/
+          local-dir: ./neuralsales/dist/
           server-dir: ./public_html/
