@@ -1,0 +1,46 @@
+name: __APP_NAME__ zu Hostinger hochladen
+
+# Lädt den App-Ordner bei jeder Änderung auf main automatisch per FTPS zu Hostinger.
+# Kann in GitHub unter "Actions" auch von Hand gestartet werden.
+on:
+  push:
+    branches: [main]
+    paths:
+      - '__APP_DIR__/**'
+      - '.github/workflows/deploy-__APP_DIR__.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-__APP_DIR__
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Code auschecken
+        uses: actions/checkout@v4
+
+      - name: PHP-Dateien auf Fehler prüfen
+        run: for f in __APP_DIR__/*.php; do php -l "$f"; done
+
+      # Wichtig: Der FTP-Zugang einer Hostinger-Website landet DIREKT in deren
+      # public_html. Deshalb server-dir "./" und NICHT "./public_html/".
+      # config.php (Datenbank-Zugang) liegt nur auf dem Server und wird nie angefasst.
+      - name: Per FTP auf Hostinger übertragen
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.__SECRET_PREFIX___FTP_SERVER }}
+          username: ${{ secrets.__SECRET_PREFIX___FTP_USERNAME }}
+          password: ${{ secrets.__SECRET_PREFIX___FTP_PASSWORD }}
+          protocol: ftps
+          local-dir: ./__APP_DIR__/
+          server-dir: ./
+          exclude: |
+            **/.git*
+            **/.git*/**
+            config.php
+            ANLEITUNG.md

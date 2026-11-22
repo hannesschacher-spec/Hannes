@@ -6,6 +6,7 @@ on:
     paths-ignore:
       - 'platzboerse/**'
       - 'dist-platzboerse/**'
+      - 'skills/**'
       - '.github/workflows/deploy-platzboerse.yml'
 
 permissions:

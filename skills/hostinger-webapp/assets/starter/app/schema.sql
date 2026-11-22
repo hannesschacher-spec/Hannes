@@ -1,0 +1,28 @@
+CREATE TABLE IF NOT EXISTS users (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(80) NOT NULL,
+  email VARCHAR(190) NOT NULL UNIQUE,
+  pass_hash VARCHAR(255) NOT NULL,
+  role ENUM('admin','mitarbeit','lesen') NOT NULL DEFAULT 'mitarbeit',
+  active TINYINT(1) NOT NULL DEFAULT 1,
+  created_at DATETIME NOT NULL,
+  last_login DATETIME NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS login_attempts (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  ip VARCHAR(45) NOT NULL,
+  email VARCHAR(190) NOT NULL,
+  ts DATETIME NOT NULL,
+  INDEX (ip), INDEX (email), INDEX (ts)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Ab hier die Tabellen der jeweiligen App. Beispiel:
+CREATE TABLE IF NOT EXISTS eintraege (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  titel VARCHAR(120) NOT NULL,
+  notiz TEXT NULL,
+  erstellt_von VARCHAR(80) NOT NULL DEFAULT '',
+  created_at DATETIME NOT NULL,
+  updated_at DATETIME NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
