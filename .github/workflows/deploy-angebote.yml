@@ -1,0 +1,47 @@
+name: Angebotstool zu Hostinger hochladen
+
+# Lädt den App-Ordner bei jeder Änderung auf main automatisch per FTPS zu Hostinger.
+# Kann in GitHub unter "Actions" auch von Hand gestartet werden.
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'angebote/**'
+      - '.github/workflows/deploy-angebote.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-angebote
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Code auschecken
+        uses: actions/checkout@v4
+
+      - name: PHP-Dateien auf Fehler prüfen
+        run: for f in angebote/*.php; do php -l "$f"; done
+
+      # Wichtig: Der FTP-Zugang einer Hostinger-Website landet DIREKT in deren
+      # public_html. Deshalb server-dir "./" und NICHT "./public_html/".
+      # config.php (Datenbank-Zugang) liegt nur auf dem Server und wird nie angefasst.
+      - name: Per FTP auf Hostinger übertragen
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.ANGEBOT_FTP_SERVER }}
+          username: ${{ secrets.ANGEBOT_FTP_USERNAME }}
+          password: ${{ secrets.ANGEBOT_FTP_PASSWORD }}
+          protocol: ftps
+          local-dir: ./angebote/
+          server-dir: ./
+          exclude: |
+            **/.git*
+            **/.git*/**
+            config.php
+            ANLEITUNG.md
+            beispiel-katalog.csv

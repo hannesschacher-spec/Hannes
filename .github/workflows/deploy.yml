@@ -3,6 +3,10 @@ name: Deploy to Hostinger
 on:
   push:
     branches: [main]
+    # Das Angebotstool hat einen eigenen Workflow (deploy-angebote.yml).
+    paths-ignore:
+      - 'angebote/**'
+      - '.github/workflows/deploy-angebote.yml'
 
 permissions:
   contents: read

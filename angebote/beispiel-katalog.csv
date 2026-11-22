@@ -1,0 +1,26 @@
+Artikelnummer;Bezeichnung;Beschreibung;Kategorie;Preis;Einheit;Aktiv;Zubehör;Benötigt;Nicht kombinierbar mit
+UPM-10;Universalprüfmaschine 10 kN, Tischgerät;"Einsäulen-Tischprüfmaschine für Zug-, Druck- und Biegeversuche bis 10 kN. Prüfraumhöhe 1050 mm, Traversengeschwindigkeit 0,001 bis 1500 mm/min, inkl. Steuerelektronik.";Grundmaschine;24900,00;Stk.;ja;KA-1, KA-10, PH-KEIL-10, PH-SCHRAUB-1, EX-CLIP, EX-OPTIK, SW-BASIS, SW-PRO, VR-BIEGE-10, SCHUTZ-TUER, KAL-DAKKS, INB-STANDARD;KA-10, SW-BASIS;KA-100, PH-HYD-100
+UPM-50;Universalprüfmaschine 50 kN, Tischgerät;"Zweisäulen-Tischprüfmaschine bis 50 kN. Prüfraumhöhe 1350 mm, Prüfraumbreite 440 mm, Traversengeschwindigkeit 0,001 bis 750 mm/min, inkl. Steuerelektronik.";Grundmaschine;38500,00;Stk.;ja;KA-1, KA-10, KA-50, PH-KEIL-10, PH-KEIL-50, PH-SCHRAUB-1, EX-CLIP, EX-OPTIK, EX-MAKRO, SW-BASIS, SW-PRO, VR-BIEGE-10, VR-DRUCK-50, TK-250, SCHUTZ-TUER, KAL-DAKKS, INB-STANDARD;KA-50, SW-BASIS;KA-100, PH-HYD-100
+UPM-100;Universalprüfmaschine 100 kN, Standgerät;"Zweisäulen-Standprüfmaschine bis 100 kN für Metalle und Verbundwerkstoffe. Prüfraumhöhe 1400 mm, inkl. Steuerelektronik und Not-Halt.";Grundmaschine;62000,00;Stk.;ja;KA-10, KA-100, PH-KEIL-50, PH-HYD-100, EX-CLIP, EX-MAKRO, EX-OPTIK, SW-BASIS, SW-PRO, VR-DRUCK-50, TK-250, SCHUTZ-TUER, KAL-DAKKS, INB-STANDARD, INB-PREMIUM;KA-100, SW-BASIS;KA-1
+KA-1;Kraftaufnehmer 1 kN;Genauigkeitsklasse 0,5 ab 0,4 % der Nennkraft (nach ISO 7500-1). Für Folien und dünne Kunststoffe.;Kraftaufnehmer;2450,00;Stk.;ja;PH-SCHRAUB-1, PH-KEIL-10;;
+KA-10;Kraftaufnehmer 10 kN;Genauigkeitsklasse 0,5 ab 0,2 % der Nennkraft (nach ISO 7500-1).;Kraftaufnehmer;2950,00;Stk.;ja;PH-KEIL-10, VR-BIEGE-10;;
+KA-50;Kraftaufnehmer 50 kN;Genauigkeitsklasse 0,5 ab 0,2 % der Nennkraft (nach ISO 7500-1).;Kraftaufnehmer;3900,00;Stk.;ja;PH-KEIL-50, VR-DRUCK-50;;
+KA-100;Kraftaufnehmer 100 kN;Genauigkeitsklasse 0,5 ab 0,2 % der Nennkraft (nach ISO 7500-1).;Kraftaufnehmer;4800,00;Stk.;ja;PH-HYD-100, VR-DRUCK-50;;
+PH-KEIL-10;Keilspannprobenhalter 10 kN (Paar);Mechanische Keilspannung, für Flachproben 0–10 mm und Rundproben 4–10 mm. Inkl. Standard-Spannbacken.;Probenhalter;2400,00;Paar;ja;SB-RIFF, SB-GUMMI;;TK-250
+PH-KEIL-50;Keilspannprobenhalter 50 kN (Paar);Mechanische Keilspannung für Metall-Flachproben bis 20 mm. Inkl. Standard-Spannbacken.;Probenhalter;4200,00;Paar;ja;SB-RIFF;;
+PH-SCHRAUB-1;Schraubprobenhalter 1 kN (Paar);Für Folien, Textilien und Papier, gummierte Spannflächen.;Probenhalter;980,00;Paar;ja;SB-GUMMI;;
+PH-HYD-100;Hydraulische Probenhalter 100 kN (Paar);Hydraulische Parallelspannung mit konstanter Spannkraft, inkl. Hydraulikaggregat und Fussschalter.;Probenhalter;14500,00;Paar;ja;SB-RIFF;;
+SB-RIFF;Spannbacken geriffelt (Satz);Für Metallproben, gehärtet.;Zubehör;380,00;Satz;ja;;;
+SB-GUMMI;Spannbacken gummiert (Satz);Für empfindliche Proben (Kunststoffe, Folien).;Zubehör;290,00;Satz;ja;;;
+EX-CLIP;Ansetz-Extensometer, Messlänge 25/50 mm;Clip-on-Dehnungsaufnehmer für Moduli und Dehngrenzen, Genauigkeitsklasse 0,5 nach ISO 9513.;Extensometer;3600,00;Stk.;ja;;;
+EX-MAKRO;Automatisches Längenänderungs-Messsystem;Vollautomatisches Ansetzen und Abnehmen der Messfühler, Messweg bis Bruch.;Extensometer;19800,00;Stk.;ja;SW-PRO;SW-PRO;TK-250
+EX-OPTIK;Berührungsloses Video-Extensometer;Optische Dehnungsmessung ohne Probenkontakt, inkl. Kamera und Beleuchtung.;Extensometer;24500,00;Stk.;ja;SW-PRO, TK-250;SW-PRO;
+SW-BASIS;Prüfsoftware Basis;Prüfsoftware mit Standardprüfvorschriften für Zug-, Druck- und Biegeversuche, Protokolle als PDF, Lizenz für 1 Arbeitsplatz.;Software;0,00;Lizenz;ja;SW-PRO;;
+SW-PRO;Prüfsoftware Erweiterung Professional;Erweiterung um normgerechte Prüfprogramme (ISO 6892-1, ISO 527), Datenbank-Export, Statistik und Videoauswertung.;Software;6900,00;Lizenz;ja;;SW-BASIS;
+VR-BIEGE-10;Biegevorrichtung 3-Punkt, 10 kN;Für Biegeversuche nach ISO 178, Auflagerabstand 10–200 mm einstellbar.;Vorrichtungen;3200,00;Stk.;ja;;;
+VR-DRUCK-50;Druckplatten Ø 100 mm, 50 kN;Gehärtete Druckplatten, eine Platte kugelgelagert.;Vorrichtungen;1650,00;Paar;ja;;;
+TK-250;Temperierkammer −70 °C bis +250 °C;Temperierkammer mit Sichtfenster, Kühlung mit Flüssigstickstoff (LN2), inkl. Regler.;Temperierung;27500,00;Stk.;ja;EX-OPTIK;;PH-KEIL-10
+SCHUTZ-TUER;Schutzeinrichtung mit Sicherheitstür;Prüfraumschutz mit überwachter Tür, nach Maschinenrichtlinie.;Sicherheit;4300,00;Stk.;ja;;;
+KAL-DAKKS;Kalibrierung Kraft und Weg (akkreditiert);Akkreditierte Kalibrierung bei Inbetriebnahme, inkl. Kalibrierschein.;Service;1450,00;pauschal;ja;;;
+INB-STANDARD;Installation und Einweisung (1 Tag);Aufstellung, Inbetriebnahme und Einweisung von bis zu 3 Personen vor Ort.;Service;1900,00;pauschal;ja;;;INB-PREMIUM
+INB-PREMIUM;Installation und Anwenderschulung (3 Tage);Aufstellung, Inbetriebnahme, Anwenderschulung mit Kundenproben.;Service;5200,00;pauschal;ja;;;INB-STANDARD
