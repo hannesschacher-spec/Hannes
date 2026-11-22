@@ -1,0 +1,30 @@
+Options -Indexes
+DirectoryIndex index.php
+
+# Interne Dateien nicht über das Internet ausliefern
+<FilesMatch "^(config|lib)\.php$|\.(sql|md|txt|log)$">
+  Require all denied
+</FilesMatch>
+
+# Immer verschlüsselt (https) aufrufen
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteCond %{HTTPS} off
+  RewriteCond %{HTTP:X-Forwarded-Proto} !https
+  RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+</IfModule>
+
+<IfModule mod_headers.c>
+  Header always set Strict-Transport-Security "max-age=31536000"
+</IfModule>
+
+# Seiten nicht zwischenspeichern (Hostinger/LiteSpeed-Cache und CDN)
+<IfModule LiteSpeed>
+  CacheLookup off
+</IfModule>
+<IfModule mod_headers.c>
+  <FilesMatch "\.php$">
+    Header always set Cache-Control "no-store, no-cache, must-revalidate, max-age=0"
+    Header always set X-LiteSpeed-Cache-Control "no-cache"
+  </FilesMatch>
+</IfModule>

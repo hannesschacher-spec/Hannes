@@ -1,0 +1,46 @@
+name: Platzbörse zu Hostinger hochladen
+
+# Läuft automatisch, sobald eine Änderung im Ordner platzboerse/ auf main landet.
+# Kann in GitHub unter "Actions" auch von Hand gestartet werden.
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'platzboerse/**'
+      - '.github/workflows/deploy-platzboerse.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-platzboerse
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Code auschecken
+        uses: actions/checkout@v4
+
+      - name: PHP-Dateien auf Fehler prüfen
+        run: for f in platzboerse/*.php; do php -l "$f"; done
+
+      # Hochgeladen wird nur, was sich geändert hat. config.php (Datenbank-Zugang)
+      # liegt nur auf dem Server und wird nie überschrieben oder gelöscht.
+      - name: Per FTP auf Hostinger übertragen
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.PB_FTP_SERVER }}
+          username: ${{ secrets.PB_FTP_USERNAME }}
+          password: ${{ secrets.PB_FTP_PASSWORD }}
+          protocol: ftps
+          local-dir: ./platzboerse/
+          server-dir: ./
+          exclude: |
+            **/.git*
+            **/.git*/**
+            config.php
+            install.php
+            ANLEITUNG.md
