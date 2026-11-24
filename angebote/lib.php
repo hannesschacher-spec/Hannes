@@ -8,9 +8,11 @@ if (!is_file(__DIR__ . '/config.php')) {
 require __DIR__ . '/config.php';
 
 const APP_NAME = 'Angebotstool';
-const APP_VERSION = '1.2';
+const APP_VERSION = '1.3';
 
 const ROLES = ['admin', 'mitarbeit', 'lesen'];
+const VERLUST_GRUENDE = ['preis' => 'Preis zu hoch', 'wettbewerb' => 'Wettbewerber gewählt', 'lieferzeit' => 'Lieferzeit', 'technik' => 'Technik passt nicht',
+    'projekt' => 'Projekt verschoben/gestoppt', 'keine_antwort' => 'Keine Rückmeldung', 'sonstiges' => 'Sonstiges'];
 const STATUS = ['entwurf' => 'Entwurf', 'versendet' => 'Versendet', 'gewonnen' => 'Gewonnen', 'verloren' => 'Verloren'];
 const BEZIEHUNGEN = ['passt', 'benoetigt', 'ausschluss'];
 
@@ -24,6 +26,7 @@ const SETTINGS_DEFAULTS = [
     'gueltigkeit_tage' => '60',
     'nummer_prefix' => 'A',
     'kunden_start' => '10001',
+    'nachfass_tage' => '7',
     'einleitung' => "Vielen Dank für Ihre Anfrage. Gerne unterbreiten wir Ihnen folgendes Angebot:",
     'bedingungen' => "Lieferzeit: nach Vereinbarung\nZahlungsbedingungen: 30 Tage netto\nPreise ab Werk, zuzüglich Verpackung und Fracht",
     'fusstext' => 'Wir freuen uns auf Ihren Auftrag. Für Rückfragen stehen wir Ihnen gerne zur Verfügung.',
@@ -53,7 +56,7 @@ function db(): PDO
 }
 
 // Bringt eine schon eingerichtete Datenbank auf den neuesten Stand (läuft nur einmal pro Version).
-const SCHEMA_VERSION = '2';
+const SCHEMA_VERSION = '3';
 function migrate(PDO $pdo): void
 {
     $v = $pdo->query("SELECT v FROM einstellungen WHERE k = 'schema'")->fetchColumn();
@@ -70,6 +73,35 @@ function migrate(PDO $pdo): void
     if (!$pdo->query("SHOW COLUMNS FROM angebote LIKE 'kunde_id'")->fetch()) {
         $pdo->exec('ALTER TABLE angebote ADD COLUMN kunde_id INT UNSIGNED NULL AFTER nummer, ADD INDEX (kunde_id),
             ADD FOREIGN KEY (kunde_id) REFERENCES kunden(id) ON DELETE SET NULL');
+    }
+    // Version 3: Ansprechpersonen, Pakete, Nachfassen, Versionen
+    $pdo->exec("CREATE TABLE IF NOT EXISTS kontakte (
+      id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, kunde_id INT UNSIGNED NOT NULL, name VARCHAR(120) NOT NULL,
+      funktion VARCHAR(120) NOT NULL DEFAULT '', email VARCHAR(190) NOT NULL DEFAULT '', telefon VARCHAR(60) NOT NULL DEFAULT '',
+      INDEX (kunde_id), FOREIGN KEY (kunde_id) REFERENCES kunden(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+    $pdo->exec("CREATE TABLE IF NOT EXISTS pakete (
+      id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, name VARCHAR(120) NOT NULL UNIQUE, beschreibung TEXT NULL,
+      positionen MEDIUMTEXT NOT NULL, erstellt_von VARCHAR(80) NOT NULL DEFAULT '', updated_at DATETIME NOT NULL
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+    $col = fn(string $c) => (bool)$pdo->query("SHOW COLUMNS FROM angebote LIKE '$c'")->fetch();
+    if (!$col('revision')) {
+        $pdo->exec('ALTER TABLE angebote ADD COLUMN basis_id INT UNSIGNED NULL AFTER nummer, ADD COLUMN revision INT UNSIGNED NOT NULL DEFAULT 1 AFTER basis_id,
+            ADD INDEX (basis_id), ADD FOREIGN KEY (basis_id) REFERENCES angebote(id) ON DELETE SET NULL');
+    }
+    if ($pdo->query("SHOW INDEX FROM angebote WHERE Key_name = 'nummer'")->fetch()) {
+        $pdo->exec('ALTER TABLE angebote DROP INDEX nummer, ADD UNIQUE KEY nummer_revision (nummer, revision)');
+    }
+    if (!$col('kontakt_id')) {
+        $pdo->exec('ALTER TABLE angebote ADD COLUMN kontakt_id INT UNSIGNED NULL AFTER kunde_id, ADD INDEX (kontakt_id),
+            ADD FOREIGN KEY (kontakt_id) REFERENCES kontakte(id) ON DELETE SET NULL');
+    }
+    if (!$col('nachfassen_am')) {
+        $pdo->exec("ALTER TABLE angebote ADD COLUMN nachfassen_am DATE NULL AFTER gueltig_bis, ADD COLUMN versendet_am DATE NULL AFTER nachfassen_am,
+            ADD COLUMN verlust_grund VARCHAR(40) NOT NULL DEFAULT '' AFTER versendet_am, ADD INDEX (nachfassen_am)");
+        // Bisherige Ansprechperson eines Kunden wird zur ersten Ansprechperson in der neuen Liste
+        $pdo->exec("INSERT INTO kontakte (kunde_id, name, email, telefon) SELECT id, kontakt, email, '' FROM kunden
+            WHERE kontakt <> '' AND id NOT IN (SELECT kunde_id FROM kontakte)");
     }
     $pdo->prepare("INSERT INTO einstellungen (k, v) VALUES ('schema', ?) ON DUPLICATE KEY UPDATE v = VALUES(v)")->execute([SCHEMA_VERSION]);
 }

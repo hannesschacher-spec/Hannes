@@ -18,6 +18,7 @@ $pos = $p->fetchAll();
 
 $st = settings();
 $cur = $st['waehrung'];
+$nrText = $a['nummer'] . ((int)$a['revision'] > 1 ? ' Rev. ' . (int)$a['revision'] : '');
 $mwst = (float)$st['mwst'];
 $t = totals($pos, (float)$a['rabatt'], $mwst);
 $kurz = ($_GET['kurz'] ?? '') === '1';
@@ -42,7 +43,7 @@ function rows(array $list, string $prefix, bool $kurz, bool $hasRabatt, string $
 $thead = '<thead><tr><th class="c-pos">Pos.</th><th class="c-nr">Artikel-Nr.</th><th>Bezeichnung</th><th class="r">Menge</th><th class="r">Einzelpreis</th>' . ($hasRabatt ? '<th class="r">Rabatt</th>' : '') . '<th class="r">Gesamt</th></tr></thead>';
 ?><!doctype html>
 <html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Angebot <?= h($a['nummer']) ?><?= $a['kunde_firma'] ? ' · ' . h($a['kunde_firma']) : '' ?></title>
+<title>Angebot <?= h($nrText) ?><?= $a['kunde_firma'] ? ' · ' . h($a['kunde_firma']) : '' ?></title>
 <link rel="stylesheet" href="druck.css?v=<?= $v('druck.css') ?>"></head>
 <body>
 <div class="bar noprint">
@@ -68,7 +69,7 @@ $thead = '<thead><tr><th class="c-pos">Pos.</th><th class="c-nr">Artikel-Nr.</th
       <?= $nl($a['kunde_adresse']) ?>
     </div>
     <table class="meta">
-      <tr><th>Angebots-Nr.</th><td><?= h($a['nummer']) ?></td></tr>
+      <tr><th>Angebots-Nr.</th><td><?= h($nrText) ?></td></tr>
       <?php if ($a['kunde_nr']): ?><tr><th>Kunden-Nr.</th><td><?= h($a['kunde_nr']) ?></td></tr><?php endif; ?>
       <tr><th>Datum</th><td><?= h(date_de($a['datum'])) ?></td></tr>
       <?php if ($a['gueltig_bis']): ?><tr><th>Gültig bis</th><td><?= h(date_de($a['gueltig_bis'])) ?></td></tr><?php endif; ?>
@@ -76,7 +77,7 @@ $thead = '<thead><tr><th class="c-pos">Pos.</th><th class="c-nr">Artikel-Nr.</th
     </table>
   </section>
 
-  <h1>Angebot <?= h($a['nummer']) ?><?= $a['titel'] ? ': ' . h($a['titel']) : '' ?></h1>
+  <h1>Angebot <?= h($nrText) ?><?= $a['titel'] ? ': ' . h($a['titel']) : '' ?></h1>
   <p><?= $a['kunde_kontakt'] ? 'Guten Tag ' . h($a['kunde_kontakt']) . ',' : 'Sehr geehrte Damen und Herren,' ?></p>
   <?php if (trim((string)$a['einleitung']) !== ''): ?><p><?= $nl($a['einleitung']) ?></p><?php endif; ?>
 

@@ -142,3 +142,14 @@ dialog.wide{width:min(920px,calc(100vw - 24px))}
 .kunde-box.none{background:var(--sunk)}
 .kv{display:flex;flex-direction:column;gap:1px;overflow-wrap:anywhere}
 .kv a{color:var(--accent)}
+
+/* Nachfassen, Versionen, Ansprechpersonen */
+.nf-box{border-color:var(--warn);background:var(--warn-soft)}
+.nf-row{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:6px 10px;padding:6px 0;border-top:1px solid rgba(0,0,0,.08)}
+.linkish{border:0;background:none;padding:0;text-align:left;cursor:pointer;font:inherit;color:inherit;display:flex;flex-direction:column;min-width:0}
+.pill.s-nf{background:var(--warn-soft);color:var(--warn)}
+.versionen{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.kontakt{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;padding:6px 0;border-top:1px solid var(--line);overflow-wrap:anywhere}
+.kontakt:first-of-type{border-top:0}
+.kontakt-wahl{flex-basis:100%}
+.kontakt-wahl select{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:8px 10px;width:100%}

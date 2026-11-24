@@ -22,6 +22,11 @@ auf eine eigene Hostinger-Website hochgeladen (Secrets `ANGEBOT_FTP_SERVER`, `AN
 - **KI-Einleitung**: Knopf «✨ Mit KI formulieren» im Angebot schreibt die Einleitung mit Claude (Anthropic API).
   API-Schlüssel und Stil-Vorgaben unter «Einstellungen» (Schlüssel wird nie an den Browser gegeben).
   Gesendet werden nur Kundenfirma, Betreff, interne Notiz und Positionen.
+- **Pakete**: typische Konfigurationen unter einem Namen speichern («Als Paket speichern») und mit «+ Paket» in jedes Angebot übernehmen (aktuelle Katalogpreise).
+- **Nachfassen**: bei «Versendet» wird ein Nachfass-Datum vorgeschlagen (Einstellung «Nachfassen nach … Tagen»). Fällige Angebote stehen oben unter «Heute nachfassen».
+  Bei «Verloren» wird ein Grund erfasst; Filter «Verloren» zeigt die Verteilung der Gründe.
+- **Versionen**: «Neue Version» legt A-2026-0012 Rev. 2 an (gleiche Nummer, alte Fassung bleibt). Listen zeigen nur die neueste Version.
+- **Ansprechpersonen**: mehrere pro Kunde (Name, Funktion, E-Mail, Telefon), im Angebot auswählbar.
 - **Druckansicht / PDF** (`druck.php`), mit Firmendaten und Bedingungen aus den Einstellungen.
 - **Rollen**: Administration (alles, inkl. Katalog), Mitarbeit (Angebote), Nur lesen.
 

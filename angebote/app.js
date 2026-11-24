@@ -9,8 +9,8 @@ const ROLLEN = {admin: 'Administration', mitarbeit: 'Mitarbeit', lesen: 'Nur les
 const STATUS = {entwurf: 'Entwurf', versendet: 'Versendet', gewonnen: 'Gewonnen', verloren: 'Verloren'};
 const TYPEN = {passt: 'Zubehör', passtAn: 'Zubehör für', benoetigt: 'Benötigt', ausschluss: 'Nicht kombinierbar mit'};
 
-let S = {angebote: [], kunden: [], settings: {}, users: [], katalogRev: null}, loaded = false, offline = false, busy = false;
-let view = 'angebote', editUserId = null, editArtikelId = null, kundeId = null, editKundeId = null, backTo = 'angebote';
+let S = {angebote: [], kunden: [], pakete: [], verlustGruende: {}, settings: {}, users: [], katalogRev: null}, loaded = false, offline = false, busy = false;
+let view = 'angebote', editKontaktId = null, kontaktKundeId = null, editUserId = null, editArtikelId = null, kundeId = null, editKundeId = null, backTo = 'angebote';
 // Katalog mit schnellen Nachschlagetabellen
 const K = {rev: null, loaded: false, list: [], byId: new Map(), byNr: new Map(), kategorien: [],
   passt: new Map(), passtAn: new Map(), benoetigt: new Map(), benoetigtVon: new Map(), ausschluss: new Map()};
@@ -72,7 +72,15 @@ async function load() {
   catch (e) { if (e.message !== 'login') offline = true; }
   render();
 }
-function setState(st) { S = st; S.users = S.users || []; S.kunden = S.kunden || []; loaded = true; }
+function setState(st) { S = st; S.users = S.users || []; S.kunden = S.kunden || []; S.pakete = S.pakete || []; S.verlustGruende = S.verlustGruende || {}; loaded = true; }
+const nrLabel = a => a.revision > 1 ? `${a.nummer} Rev. ${a.revision}` : (a.nummer || '');
+// Nur die neueste Version jedes Angebots (ältere Versionen bleiben über das Angebot erreichbar)
+function aktuelle(list) {
+  const best = new Map(), anz = new Map();
+  for (const a of list) { anz.set(a.gruppe, (anz.get(a.gruppe) || 0) + 1); const b = best.get(a.gruppe); if (!b || a.revision > b.revision) best.set(a.gruppe, a); }
+  return list.filter(a => best.get(a.gruppe) === a).map(a => ({...a, versionen: anz.get(a.gruppe)}));
+}
+const faellig = a => a.status === 'versendet' && a.nachfassen && a.nachfassen <= today();
 async function syncKatalog() { if (S.katalogRev !== K.rev) buildKatalog(await get('katalog')); }
 async function call(action, body, {quiet = false} = {}) {
   busy = true;
@@ -125,7 +133,7 @@ function shellAngebote() {
   $('#view-angebote').innerHTML = `<div class="stack">
     <div class="toolbar">
       <input type="search" id="a-q" placeholder="Suchen: Angebots- oder Kundennummer, Kunde, Betreff" aria-label="Angebote suchen">
-      <select id="a-status" aria-label="Status"><option value="">Alle Status</option>${Object.entries(STATUS).map(([k, v]) => `<option value="${k}">${v}</option>`).join('')}</select>
+      <select id="a-status" aria-label="Status"><option value="">Alle Status</option><option value="nachfassen">🔔 Nachfassen fällig</option>${Object.entries(STATUS).map(([k, v]) => `<option value="${k}">${v}</option>`).join('')}</select>
       ${canWrite ? '<button class="btn primary" data-action="new-angebot">+ Neues Angebot</button>' : ''}
     </div>
     <div id="a-list" class="stack-s"></div></div>`;
@@ -134,13 +142,28 @@ function renderAngebotListe() {
   const el = $('#a-list'); if (!el) return;
   if (!loaded) { el.innerHTML = '<p class="muted">Wird geladen …</p>'; return; }
   const q = norm($('#a-q').value), st = $('#a-status').value;
-  const list = S.angebote.filter(a => (!st || a.status === st) && (!q || q.split(/\s+/).every(t => norm(`${a.nummer} ${a.kundeNr} ${a.kunde} ${a.titel} ${a.von}`).includes(t))));
+  const alle = aktuelle(S.angebote);
+  const list = alle.filter(a => (!st || (st === 'nachfassen' ? faellig(a) : a.status === st)) && (!q || q.split(/\s+/).every(t => norm(`${a.nummer} ${a.kundeNr} ${a.kunde} ${a.titel} ${a.von}`).includes(t))));
   if (!S.angebote.length) { el.innerHTML = `<div class="empty">Noch keine Angebote.${canWrite ? ' Mit «+ Neues Angebot» geht es los.' : ''}${K.list.length ? '' : '<br>Tipp: Zuerst unter «Katalog» die Artikel importieren.'}</div>`; return; }
-  el.innerHTML = list.length ? list.map(a => angebotCard(a)).join('') : '<div class="empty">Keine Angebote gefunden.</div>';
+  const nf = alle.filter(faellig).sort((x, y) => x.nachfassen.localeCompare(y.nachfassen));
+  const bald = alle.filter(a => a.status === 'versendet' && a.nachfassen > today() && a.nachfassen <= today(7)).length;
+  let h = '';
+  if (nf.length && !st && !q) {
+    h += `<section class="card stack nf-box"><div class="row-between"><h3>🔔 Heute nachfassen (${nf.length})</h3>${bald ? `<span class="small muted">in den nächsten 7 Tagen: ${bald}</span>` : ''}</div>
+      ${nf.map(a => `<div class="nf-row"><button class="linkish" data-action="open-angebot" data-id="${a.id}"><span><strong>${esc(nrLabel(a))}</strong> · ${esc(a.kunde || 'Ohne Kunde')}${a.titel ? ' · ' + esc(a.titel) : ''}</span>
+          <span class="small ${a.nachfassen < today() ? 'err-t' : 'muted'}">fällig ${a.nachfassen < today() ? 'seit' : 'am'} ${fmtD(a.nachfassen)}</span></button>
+        ${canWrite ? `<span class="btn-row"><button class="btn small-btn" data-action="nf-later" data-id="${a.id}">In ${parseInt(S.settings.nachfass_tage, 10) || 7} Tagen erneut</button><button class="btn small-btn" data-action="nf-done" data-id="${a.id}">Erledigt</button></span>` : ''}</div>`).join('')}
+    </section>`;
+  }
+  if (st === 'verloren' && list.length) {
+    const g = {}; for (const a of list) g[a.grund || ''] = (g[a.grund || ''] || 0) + 1;
+    h += `<p class="small"><strong>Verlustgründe:</strong> ${Object.entries(g).sort((x, y) => y[1] - x[1]).map(([k, n]) => `${esc(S.verlustGruende[k] || 'nicht angegeben')} ${n}`).join(' · ')}</p>`;
+  }
+  el.innerHTML = h + (list.length ? list.map(a => angebotCard(a)).join('') : '<div class="empty">Keine Angebote gefunden.</div>');
 }
 function angebotCard(a, mitKunde = true) {
   return `<button class="card item" data-action="open-angebot" data-id="${a.id}">
-      <div class="item-main"><div><strong>${esc(a.nummer)}</strong> <span class="pill s-${a.status}">${STATUS[a.status]}</span></div>
+      <div class="item-main"><div><strong>${esc(nrLabel(a))}</strong> <span class="pill s-${a.status}">${STATUS[a.status]}</span>${faellig(a) ? ' <span class="pill s-nf">🔔 nachfassen</span>' : ''}${a.versionen > 1 ? ` <span class="small muted">${a.versionen} Versionen</span>` : ''}${a.status === 'verloren' && a.grund ? ` <span class="small muted">· ${esc(S.verlustGruende[a.grund] || '')}</span>` : ''}</div>
         <div>${mitKunde ? (a.kundeNr ? `<span class="muted">${esc(a.kundeNr)}</span> ` : '') + esc(a.kunde || 'Ohne Kunde') : ''}${a.titel ? (mitKunde ? ' · ' : '') + esc(a.titel) : ''}</div>
         <div class="small muted">${fmtD(a.datum)} · ${esc(a.von)} · ${a.anzahl} Pos. · geändert ${fmtT(a.updatedAt)}</div></div>
       <div class="item-side"><strong>${money(a.netto)}</strong><div class="small muted">netto</div></div></button>`;
@@ -148,7 +171,8 @@ function angebotCard(a, mitKunde = true) {
 
 /* ---------- Kunden ---------- */
 const ort = k => (k.adresse || '').split('\n').map(x => x.trim()).filter(Boolean).pop() || '';
-const kundeAngebote = id => S.angebote.filter(a => a.kundeId === id);
+const kundeAngebote = id => aktuelle(S.angebote).filter(a => a.kundeId === id);
+const hauptKontakt = k => (k.kontakte || [])[0] || null;
 function shellKunden() {
   $('#view-kunden').innerHTML = `<div class="stack">
     <div class="toolbar">
@@ -157,7 +181,7 @@ function shellKunden() {
     </div>
     <div id="ku-list" class="stack-s"></div></div>`;
 }
-const kundeMatch = (k, q) => !q || norm(q).split(/\s+/).filter(Boolean).every(t => norm(`${k.nummer} ${k.firma} ${k.kontakt} ${k.adresse} ${k.email}`).includes(t));
+const kundeMatch = (k, q) => !q || norm(q).split(/\s+/).filter(Boolean).every(t => norm(`${k.nummer} ${k.firma} ${(k.kontakte || []).map(c => c.name).join(' ')} ${k.adresse} ${k.email}`).includes(t));
 function renderKundenListe() {
   const el = $('#ku-list'); if (!el) return;
   if (!loaded) { el.innerHTML = '<p class="muted">Wird geladen …</p>'; return; }
@@ -167,7 +191,7 @@ function renderKundenListe() {
     const an = kundeAngebote(k.id), offen = an.filter(a => a.status === 'entwurf' || a.status === 'versendet');
     return `<button class="card item" data-action="open-kunde" data-id="${k.id}">
       <div class="item-main"><div><span class="knr">${esc(k.nummer)}</span> <strong>${esc(k.firma)}</strong></div>
-        <div class="small muted">${[k.kontakt, ort(k)].filter(Boolean).map(esc).join(' · ') || '&nbsp;'}</div></div>
+        <div class="small muted">${[hauptKontakt(k)?.name, ort(k)].filter(Boolean).map(esc).join(' · ') || '&nbsp;'}</div></div>
       <div class="item-side"><strong>${an.length} Angebot${an.length === 1 ? '' : 'e'}</strong><div class="small muted">${offen.length ? `${offen.length} offen · ${money(offen.reduce((x, a) => x + a.netto, 0))}` : '–'}</div></div></button>`;
   }).join('') : '<div class="empty">Keine Kunden gefunden.</div>';
 }
@@ -196,8 +220,13 @@ function renderKunde() {
         ${an.length ? an.map(a => angebotCard(a, false)).join('') : `<div class="empty">Noch keine Angebote für diesen Kunden.${canWrite ? ' Mit «+ Neues Angebot» geht es los, die Kundendaten werden übernommen.' : ''}</div>`}
       </div>
       <aside class="stack ed-side">
+        <section class="card stack"><div class="row-between"><h3>Ansprechpersonen</h3>${canWrite ? '<button class="btn small-btn" data-action="new-kontakt">+ Person</button>' : ''}</div>
+          ${(k.kontakte || []).length ? k.kontakte.map(c => `<div class="kontakt"><div><strong>${esc(c.name)}</strong>${c.funktion ? ` <span class="small muted">${esc(c.funktion)}</span>` : ''}
+              <div class="small">${[c.email ? `<a href="mailto:${esc(c.email)}">${esc(c.email)}</a>` : '', c.telefon ? `<a href="tel:${esc(c.telefon.replace(/[^+0-9]/g, ''))}">${esc(c.telefon)}</a>` : ''].filter(Boolean).join(' · ')}</div></div>
+              ${canWrite ? `<button class="btn small-btn ghost" data-action="edit-kontakt" data-id="${c.id}">Bearbeiten</button>` : ''}</div>`).join('') : '<p class="small muted">Noch keine Ansprechperson.</p>'}
+        </section>
         <section class="card stack"><h3>Kundendaten</h3>
-          ${row('Kundennummer', esc(k.nummer))}${row('Ansprechperson', esc(k.kontakt))}${row('Anschrift', esc(k.adresse).replace(/\n/g, '<br>'))}
+          ${row('Kundennummer', esc(k.nummer))}${row('Anschrift', esc(k.adresse).replace(/\n/g, '<br>'))}
           ${row('E-Mail', k.email ? `<a href="mailto:${esc(k.email)}">${esc(k.email)}</a>` : '')}${row('Telefon', k.telefon ? `<a href="tel:${esc(k.telefon.replace(/[^+0-9]/g, ''))}">${esc(k.telefon)}</a>` : '')}
           ${row('Standardrabatt', k.rabatt ? numIn(k.rabatt) + ' %' : '')}${row('Notiz', esc(k.notiz).replace(/\n/g, '<br>'))}
         </section>
@@ -213,17 +242,23 @@ function renderKunde() {
 function openKundeDlg(id, vorlage) {
   const k = id ? S.kunden.find(x => x.id === id) : (vorlage || null), f = $('#form-kunde'); f.reset(); editKundeId = id || null;
   $('#kunde-title').textContent = id ? 'Kunde bearbeiten' : 'Neuer Kunde';
-  for (const n of ['nummer', 'firma', 'kontakt', 'email', 'telefon', 'adresse', 'notiz']) f[n].value = (k && k[n]) || '';
+  for (const n of ['nummer', 'firma', 'email', 'telefon', 'adresse', 'notiz']) f[n].value = (k && k[n]) || '';
+  f.kontakt.value = (!id && k && k.kontakt) || ''; f.kontakt_email.value = (!id && k && k.kontakt_email) || '';
+  $('#k-kontakt-wrap').hidden = !!id;
   f.rabatt.value = k && k.rabatt ? numIn(k.rabatt) : '';
   const next = Math.max(parseInt(S.settings.kunden_start, 10) || 10001, ...S.kunden.map(x => +x.nummer + 1));
   f.nummer.placeholder = `automatisch (${next})`;
   $('#dlg-kunde').dataset.forEditor = vorlage ? '1' : '';
   $('#dlg-kunde').showModal();
 }
+// Kundendaten für ein Angebot (erste Ansprechperson vorausgewählt)
+function kundeFelder(k, c = hauptKontakt(k)) {
+  return {kunde_id: k.id, kunde_firma: k.firma, kontakt_id: c ? c.id : null, kunde_kontakt: c ? c.name : '', kunde_email: (c && c.email) || k.email || '', kunde_adresse: k.adresse};
+}
 // Kunde ins Angebot übernehmen
 function applyKunde(k) {
   if (!A || !k) return;
-  A.kunde_id = k.id; A.kunde_firma = k.firma; A.kunde_kontakt = k.kontakt; A.kunde_email = k.email; A.kunde_adresse = k.adresse;
+  Object.assign(A, kundeFelder(k));
   if (!A.rabatt && k.rabatt) A.rabatt = k.rabatt;
   for (const n of ['kunde_firma', 'kunde_kontakt', 'kunde_email', 'kunde_adresse']) { const i = $('#ed-' + n); if (i) i.value = A[n] || ''; }
   const r = $('#ed-rabatt'); if (r) r.value = numIn(A.rabatt);
@@ -234,14 +269,17 @@ function renderEdKunde() {
   const k = A.kunde_id ? S.kunden.find(x => x.id === A.kunde_id) : null;
   el.innerHTML = k
     ? `<div class="kunde-box"><div><span class="small muted">Kunde</span><div><span class="knr">${esc(k.nummer)}</span> <strong>${esc(k.firma)}</strong></div></div>
-        <div class="btn-row"><button class="btn" data-action="goto-kunde" data-id="${k.id}">Zum Kunden</button>${canWrite ? '<button class="btn ghost" data-action="pick-kunde">Anderen Kunden wählen</button>' : ''}</div></div>`
+        <div class="btn-row"><button class="btn" data-action="goto-kunde" data-id="${k.id}">Zum Kunden</button>${canWrite ? '<button class="btn ghost" data-action="pick-kunde">Anderen Kunden wählen</button>' : ''}</div>
+        <div class="field kontakt-wahl"><label for="ed-kontaktwahl">Ansprechperson für dieses Angebot</label><select id="ed-kontaktwahl"${canWrite ? '' : ' disabled'}>
+          ${(k.kontakte || []).map(c => `<option value="${c.id}"${A.kontakt_id === c.id ? ' selected' : ''}>${esc(c.name)}${c.funktion ? ' – ' + esc(c.funktion) : ''}</option>`).join('')}
+          <option value=""${A.kontakt_id ? '' : ' selected'}>Andere / frei eintragen</option></select></div></div>`
     : `<div class="kunde-box none"><div><strong>Kein Kunde ausgewählt.</strong><div class="small muted">Kunde auswählen, dann werden Anschrift und Ansprechperson übernommen.</div></div>
         ${canWrite ? `<div class="btn-row"><button class="btn primary" data-action="pick-kunde">Kunde auswählen</button>${A.kunde_firma ? '<button class="btn" data-action="kunde-aus-angebot">Als neuen Kunden anlegen</button>' : ''}</div>` : ''}</div>`;
 }
 function renderKundeWahl() {
   const q = $('#kw-q').value, list = S.kunden.filter(k => kundeMatch(k, q));
   $('#kw-list').innerHTML = list.length ? list.slice(0, 100).map(k => `<button class="card item" data-action="choose-kunde" data-id="${k.id}">
-      <div class="item-main"><div><span class="knr">${esc(k.nummer)}</span> <strong>${esc(k.firma)}</strong></div><div class="small muted">${[k.kontakt, ort(k)].filter(Boolean).map(esc).join(' · ')}</div></div>
+      <div class="item-main"><div><span class="knr">${esc(k.nummer)}</span> <strong>${esc(k.firma)}</strong></div><div class="small muted">${[hauptKontakt(k)?.name, ort(k)].filter(Boolean).map(esc).join(' · ')}</div></div>
       <div class="item-side small muted">${kundeAngebote(k.id).length} Angebote</div></button>`).join('')
     : `<div class="empty">${S.kunden.length ? 'Kein Kunde gefunden.' : 'Noch keine Kunden angelegt.'}</div>`;
 }
@@ -255,12 +293,12 @@ async function openAngebot(id, fuerKunde = null, from = null) {
     try { a = (await get('angebot', {id})).angebot; }
     catch (e) { toast(e.message); history.replaceState(null, '', location.pathname); showView('angebote'); return; }
   } else {
-    a = {id: null, nummer: '', kunde_id: null, titel: '', kunde_firma: '', kunde_kontakt: '', kunde_email: '', kunde_adresse: '', status: 'entwurf',
+    a = {id: null, nummer: '', revision: 1, versionen: [], kontakt_id: null, nachfassen_am: '', verlust_grund: '', kunde_id: null, titel: '', kunde_firma: '', kunde_kontakt: '', kunde_email: '', kunde_adresse: '', status: 'entwurf',
       datum: today(), gueltig_bis: today(parseInt(S.settings.gueltigkeit_tage, 10) || 60), rabatt: 0,
       einleitung: S.settings.einleitung || '', notiz_intern: '', erstellt_von: ME.name, positionen: []};
   }
   a.positionen.forEach(p => p._k = Math.random());
-  if (fuerKunde) { const k = S.kunden.find(x => x.id === fuerKunde); if (k) Object.assign(a, {kunde_id: k.id, kunde_firma: k.firma, kunde_kontakt: k.kontakt, kunde_email: k.email, kunde_adresse: k.adresse, rabatt: k.rabatt || 0}); }
+  if (fuerKunde) { const k = S.kunden.find(x => x.id === fuerKunde); if (k) Object.assign(a, kundeFelder(k), {rabatt: k.rabatt || 0}); }
   A = a; dirty = false;
   if (A.id) history.replaceState(null, '', '#angebot=' + A.id);
   renderEditor(); showView('editor');
@@ -273,10 +311,11 @@ function renderEditor() {
       <div class="ed-title"><h2 id="ed-nummer"></h2><span id="ed-save" class="small muted" aria-live="polite"></span></div>
       <div class="ed-actions">
         <button class="btn" data-action="print">Drucken / PDF</button>
-        ${canWrite ? '<button class="btn" data-action="copy-angebot">Kopieren</button>' : ''}
+        ${canWrite ? '<button class="btn" data-action="new-version" title="Gleiche Nummer, neue Revision">Neue Version</button><button class="btn" data-action="copy-angebot">Kopieren</button>' : ''}
         ${isAdmin ? '<button class="btn danger" data-action="delete-angebot">Löschen</button>' : ''}
       </div>
     </div>
+    ${(A.versionen || []).length > 1 ? `<div class="versionen"><span class="small muted">Versionen:</span> ${A.versionen.map(v => `<button class="btn small-btn${v.id === A.id ? ' primary' : ''}" data-action="open-angebot" data-id="${v.id}">Rev. ${v.revision} · ${STATUS[v.status]}</button>`).join('')}${A.versionen[A.versionen.length - 1].id !== A.id ? '<span class="small warn-t">Sie sehen eine ältere Version.</span>' : ''}</div>` : ''}
     <div class="ed-grid">
       <div class="stack">
         <section class="card stack"><h3>Kunde und Angebot</h3>
@@ -290,11 +329,12 @@ function renderEditor() {
             ${f('datum', 'Angebotsdatum', 'type="date"')}
             ${f('gueltig_bis', 'Gültig bis', 'type="date"')}
             <div class="field"><label for="ed-status">Status</label><select id="ed-status" data-f="status">${Object.entries(STATUS).map(([k, v]) => `<option value="${k}"${A.status === k ? ' selected' : ''}>${v}</option>`).join('')}</select></div>
+            <div id="ed-status-extra"></div>
           </div>
         </section>
         <section class="card stack">
           <div class="row-between"><h3>Konfiguration / Positionen</h3>
-            ${canWrite ? '<div class="btn-row"><button class="btn primary" data-action="pick">+ Artikel aus Katalog</button><button class="btn" data-action="free-pos">+ Freie Position</button></div>' : ''}</div>
+            ${canWrite ? '<div class="btn-row"><button class="btn primary" data-action="pick">+ Artikel aus Katalog</button><button class="btn" data-action="pick-paket">+ Paket</button><button class="btn" data-action="free-pos">+ Freie Position</button><button class="btn ghost" data-action="save-paket">Als Paket speichern</button></div>' : ''}</div>
           <div id="ed-pos"></div>
         </section>
         <section class="card stack"><h3>Texte</h3>
@@ -318,10 +358,21 @@ function renderEditor() {
         <section class="card stack" id="ed-check"></section>
       </aside>
     </div></div>`;
-  updateHead(); renderEdKunde(); renderPositionen(); renderCheck(); updateSums(); setSave(A.id ? 'Gespeichert' : '');
+  updateHead(); renderStatusExtra(); renderEdKunde(); renderPositionen(); renderCheck(); updateSums(); setSave(A.id ? 'Gespeichert' : '');
   if (!canWrite) for (const i of $$('#view-editor input, #view-editor textarea, #view-editor select')) i.disabled = true;
 }
-function updateHead() { $('#ed-nummer').textContent = A.nummer ? `Angebot ${A.nummer}` : 'Neues Angebot'; }
+function updateHead() { $('#ed-nummer').textContent = A.nummer ? `Angebot ${nrLabel(A)}` : 'Neues Angebot'; }
+// Nachfassen (Entwurf/Versendet) bzw. Verlustgrund (Verloren)
+function renderStatusExtra() {
+  const el = $('#ed-status-extra'); if (!el || !A) return;
+  const ro = canWrite ? '' : ' disabled';
+  if (A.status === 'verloren') {
+    el.innerHTML = `<div class="field"><label for="ed-verlust_grund">Grund für den Verlust</label><select id="ed-verlust_grund" data-f="verlust_grund"${ro}><option value="">– bitte wählen –</option>
+      ${Object.entries(S.verlustGruende).map(([k, v]) => `<option value="${k}"${A.verlust_grund === k ? ' selected' : ''}>${esc(v)}</option>`).join('')}</select></div>`;
+  } else if (A.status === 'versendet' || A.status === 'entwurf') {
+    el.innerHTML = `<div class="field"><label for="ed-nachfassen_am">Nachfassen am</label><input id="ed-nachfassen_am" type="date" data-f="nachfassen_am" value="${esc(A.nachfassen_am || '')}"${ro}></div>`;
+  } else el.innerHTML = '';
+}
 function setSave(t, err) { const e = $('#ed-save'); if (e) { e.textContent = t; e.classList.toggle('err-t', !!err); } }
 function posLabels() { let n = 0, o = 0; return A.positionen.map(p => p.optional ? 'O' + (++o) : String(++n)); }
 function renderPositionen() {
@@ -427,6 +478,44 @@ async function flushSave() {
   const ok = await saveNow();
   if (!ok && dirty) return confirm('Die letzten Änderungen konnten nicht gespeichert werden. Trotzdem weiter?');
   return true;
+}
+
+/* ---------- Pakete ---------- */
+const paketPos = pp => { const art = pp.nr ? K.byNr.get(pp.nr.toLowerCase()) : null; return {art, preis: art ? art.p : pp.preis}; };
+function renderPakete() {
+  const el = $('#paket-list');
+  if (!S.pakete.length) { el.innerHTML = '<div class="empty">Noch keine Pakete. Stellen Sie ein Angebot zusammen und tippen Sie auf «Als Paket speichern».</div>'; return; }
+  el.innerHTML = S.pakete.map(pk => {
+    const sum = pk.positionen.filter(p => !p.optional).reduce((x, p) => x + p.menge * paketPos(p).preis * (1 - p.rabatt / 100), 0);
+    const fehlt = pk.positionen.filter(p => p.nr && !paketPos(p).art).length;
+    return `<div class="pick"><div class="pick-main"><strong>${esc(pk.name)}</strong>${pk.beschreibung ? `<div class="small muted">${esc(pk.beschreibung)}</div>` : ''}
+        <div class="small muted clamp">${pk.positionen.length} Positionen: ${pk.positionen.map(p => esc(p.nr || p.bezeichnung)).join(', ')}</div>
+        ${fehlt ? `<div class="badges"><span class="badge warn">${fehlt} Artikel nicht mehr im Katalog</span></div>` : ''}</div>
+      <div class="pick-side"><strong>${money(sum)}</strong><span class="btn-row">${isAdmin ? `<button class="btn small-btn danger" data-action="delete-paket" data-id="${pk.id}">Löschen</button>` : ''}<button class="btn primary" data-action="use-paket" data-id="${pk.id}">Übernehmen</button></span></div></div>`;
+  }).join('');
+}
+function usePaket(id) {
+  const pk = S.pakete.find(x => x.id === id); if (!pk || !A) return;
+  let alt = 0;
+  for (const pp of pk.positionen) {
+    const {art} = paketPos(pp);
+    // aktuelle Katalogdaten verwenden, Menge/Rabatt/Option aus dem Paket
+    A.positionen.push(art ? {_k: Math.random(), artikel_id: art.id, nr: art.nr, bezeichnung: art.b, beschreibung: art.d, einheit: art.e || 'Stk.', preis: art.p, menge: pp.menge, rabatt: pp.rabatt, optional: pp.optional}
+      : {_k: Math.random(), artikel_id: null, nr: pp.nr, bezeichnung: pp.bezeichnung, beschreibung: pp.beschreibung, einheit: pp.einheit, preis: pp.preis, menge: pp.menge, rabatt: pp.rabatt, optional: pp.optional});
+    if (pp.nr && !art) alt++;
+  }
+  $('#dlg-paket').close(); changed(true);
+  toast(`Paket «${pk.name}» übernommen (${pk.positionen.length} Positionen)` + (alt ? `. ${alt} Artikel nicht mehr im Katalog, alter Preis übernommen.` : ''));
+}
+
+/* ---------- Ansprechpersonen ---------- */
+function openKontaktDlg(id) {
+  kontaktKundeId = view === 'editor' && A ? A.kunde_id : kundeId;
+  const k = S.kunden.find(x => x.id === kontaktKundeId), c = id && k ? (k.kontakte || []).find(x => x.id === id) : null, f = $('#form-kontakt');
+  f.reset(); editKontaktId = c ? c.id : null;
+  $('#kontakt-title').textContent = c ? 'Ansprechperson bearbeiten' : 'Neue Ansprechperson';
+  if (c) { f.name.value = c.name; f.funktion.value = c.funktion; f.email.value = c.email; f.telefon.value = c.telefon; }
+  $('#kt-del').hidden = !c; $('#dlg-kontakt').showModal();
 }
 
 /* ---------- Artikel-Auswahl ---------- */
@@ -619,6 +708,7 @@ function renderEinstellungen() {
       ${f('gueltigkeit_tage', 'Angebot gültig (Tage)', 'inputmode="numeric"')}
       ${f('nummer_prefix', 'Kürzel für Angebotsnummer (z. B. A → A-2026-0001)', 'maxlength="10"')}
       ${f('kunden_start', 'Erste Kundennummer (5-stellig)', 'inputmode="numeric" maxlength="5"')}
+      ${f('nachfass_tage', 'Nachfassen nach … Tagen (bei «Versendet»)', 'inputmode="numeric" maxlength="2"')}
       ${t('einleitung', 'Standard-Einleitung für neue Angebote')}
       ${t('bedingungen', 'Lieferung und Zahlung (unter den Positionen)', 4)}
       ${t('fusstext', 'Schlusstext')}
@@ -666,6 +756,21 @@ document.addEventListener('input', e => {
     A[t.dataset.f] = t.dataset.f === 'rabatt' ? Math.min(100, Math.max(0, parseNum(t.value))) : t.value;
     if (t.dataset.f === 'rabatt') updateSums();
     if (t.dataset.f === 'kunde_firma' && !A.kunde_id) renderEdKunde();
+    if (t.dataset.f === 'status') {
+      const tage = parseInt(S.settings.nachfass_tage, 10) || 7;
+      if (A.status === 'versendet' && !A.nachfassen_am) A.nachfassen_am = today(tage);
+      if (A.status === 'gewonnen' || A.status === 'verloren') A.nachfassen_am = '';
+      if (A.status !== 'verloren') A.verlust_grund = '';
+      renderStatusExtra();
+      if (A.status === 'versendet') toast(`Nachfassen ist für den ${fmtD(A.nachfassen_am)} vorgemerkt.`);
+    }
+    return scheduleSave();
+  }
+  if (t.id === 'ed-kontaktwahl') {
+    const k = S.kunden.find(x => x.id === A.kunde_id), c = k && (k.kontakte || []).find(x => x.id === t.value);
+    A.kontakt_id = c ? c.id : null;
+    if (c) { A.kunde_kontakt = c.name; A.kunde_email = c.email || k.email || ''; $('#ed-kunde_kontakt').value = A.kunde_kontakt; $('#ed-kunde_email').value = A.kunde_email; }
+    else $('#ed-kunde_kontakt').focus();
     return scheduleSave();
   }
   const row = t.closest('.pos'); if (!row || !t.dataset.p) return;
@@ -701,6 +806,15 @@ document.addEventListener('submit', async e => {
     if (d) { $('#dlg-artikel').close(); toast('Artikel gespeichert'); }
   }
   if (f.id === 'form-import' && IMP && !IMP.error) runImport();
+  if (f.id === 'form-paket') {
+    const name = f.name.value.trim();
+    if (S.pakete.some(x => x.name.toLowerCase() === name.toLowerCase()) && !confirm(`Es gibt schon ein Paket «${name}». Ersetzen?`)) return;
+    if (await call('paket_save', {name, beschreibung: f.beschreibung.value, positionen: payload(A).positionen})) { $('#dlg-paket-save').close(); toast(`Paket «${name}» gespeichert`); }
+  }
+  if (f.id === 'form-kontakt') {
+    const d = await call('kontakt_save', {id: editKontaktId, kunde_id: kontaktKundeId, name: f.name.value, funktion: f.funktion.value, email: f.email.value, telefon: f.telefon.value});
+    if (d) { $('#dlg-kontakt').close(); toast('Ansprechperson gespeichert'); if (A && view === 'editor') renderEdKunde(); }
+  }
   if (f.id === 'form-kunde') {
     const v = Object.fromEntries(new FormData(f)); v.id = editKundeId; v.rabatt = parseNum(v.rabatt);
     const d = await call('kunde_save', v);
@@ -738,8 +852,33 @@ document.addEventListener('click', async e => {
   if (act === 'pick-kunde') { $('#kw-q').value = ''; renderKundeWahl(); $('#dlg-kundewahl').showModal(); }
   if (act === 'choose-kunde') { applyKunde(S.kunden.find(x => x.id === a.dataset.id)); $('#dlg-kundewahl').close(); }
   if (act === 'new-kunde-wahl') openKundeDlg(null, {firma: $('#kw-q').value.trim()});
-  if (act === 'kunde-aus-angebot') openKundeDlg(null, {firma: A.kunde_firma, kontakt: A.kunde_kontakt, email: A.kunde_email, adresse: A.kunde_adresse});
+  if (act === 'kunde-aus-angebot') openKundeDlg(null, {firma: A.kunde_firma, kontakt: A.kunde_kontakt, kontakt_email: A.kunde_email, adresse: A.kunde_adresse});
   if (act === 'pick') openPick();
+  if (act === 'pick-paket') { renderPakete(); $('#dlg-paket').showModal(); }
+  if (act === 'use-paket') usePaket(a.dataset.id);
+  if (act === 'delete-paket') {
+    const pk = S.pakete.find(x => x.id === a.dataset.id); if (!pk || !confirm(`Paket «${pk.name}» löschen?`)) return;
+    if (await call('paket_delete', {id: pk.id})) { renderPakete(); toast('Paket gelöscht'); }
+  }
+  if (act === 'save-paket') {
+    if (!A.positionen.length) { toast('Das Angebot hat noch keine Positionen.'); return; }
+    const f = $('#form-paket'); f.reset(); f.name.value = A.titel || ''; $('#dlg-paket-save').showModal();
+  }
+  if (act === 'new-version') {
+    if (!(await flushSave()) || !A.id) { if (!A.id) toast('Bitte das Angebot zuerst speichern (Positionen hinzufügen).'); return; }
+    if (!confirm(`Neue Version von ${A.nummer} anlegen? Die bisherige Version bleibt unverändert erhalten.`)) return;
+    const d = await call('angebot_version', {id: A.id});
+    if (d) { await openAngebot(d.angebot.id); toast(`${d.angebot.nummer} Rev. ${d.angebot.revision} angelegt`); }
+  }
+  if (act === 'nf-later' || act === 'nf-done') {
+    const tage = parseInt(S.settings.nachfass_tage, 10) || 7;
+    if (await call('nachfassen', {id: a.dataset.id, datum: act === 'nf-later' ? today(tage) : null})) toast(act === 'nf-later' ? `Wieder vorgemerkt für ${fmtD(today(tage))}` : 'Nachfassen erledigt');
+  }
+  if (act === 'new-kontakt' || act === 'edit-kontakt') openKontaktDlg(a.dataset.id || null);
+  if (act === 'delete-kontakt') {
+    if (!confirm('Diese Ansprechperson löschen?')) return;
+    if (await call('kontakt_delete', {id: editKontaktId})) { $('#dlg-kontakt').close(); toast('Ansprechperson gelöscht'); }
+  }
   if (act === 'ki-einleitung') {
     if (!S.kiAktiv) { toast(isAdmin ? 'Bitte zuerst unter «Einstellungen» den API-Schlüssel eintragen.' : 'Die KI ist noch nicht eingerichtet. Bitte die Administration fragen.'); return; }
     if (!A.positionen.length) { toast('Bitte zuerst Positionen hinzufügen.'); return; }

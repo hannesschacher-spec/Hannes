@@ -123,15 +123,42 @@ $isAdmin = $user['role'] === 'admin';
       <div class="field"><label for="k-nummer">Kundennummer (5-stellig)</label><input id="k-nummer" name="nummer" inputmode="numeric" maxlength="5" pattern="[1-9][0-9]{4}"></div>
       <div class="field"><label for="k-rabatt">Standardrabatt %</label><input id="k-rabatt" name="rabatt" inputmode="decimal" placeholder="0"></div>
       <div class="field span2"><label for="k-firma">Firma</label><input id="k-firma" name="firma" required maxlength="200"></div>
-      <div class="field"><label for="k-kontakt">Ansprechperson</label><input id="k-kontakt" name="kontakt" maxlength="120"></div>
-      <div class="field"><label for="k-telefon">Telefon</label><input id="k-telefon" name="telefon" type="tel" maxlength="60"></div>
-      <div class="field span2"><label for="k-email">E-Mail</label><input id="k-email" name="email" type="email" maxlength="190"></div>
+      <div class="field"><label for="k-telefon">Telefon (Zentrale)</label><input id="k-telefon" name="telefon" type="tel" maxlength="60"></div>
+      <div class="field"><label for="k-email">E-Mail (allgemein)</label><input id="k-email" name="email" type="email" maxlength="190"></div>
+      <div class="field span2 grid2" id="k-kontakt-wrap"><div class="field"><label for="k-kontakt">Erste Ansprechperson</label><input id="k-kontakt" name="kontakt" maxlength="120"></div>
+        <div class="field"><label for="k-kontakt-email">E-Mail der Ansprechperson</label><input id="k-kontakt-email" name="kontakt_email" type="email" maxlength="190"></div></div>
       <div class="field span2"><label for="k-adresse">Anschrift</label><textarea id="k-adresse" name="adresse" rows="3" maxlength="1000" placeholder="Strasse&#10;PLZ Ort&#10;Land"></textarea></div>
       <div class="field span2"><label for="k-notiz">Interne Notiz</label><textarea id="k-notiz" name="notiz" rows="3" maxlength="4000" placeholder="z. B. Branche, vorhandene Maschinen, Besonderheiten"></textarea></div>
     </div>
     <p class="small muted">Leer lassen = Kundennummer wird automatisch vergeben.</p>
   </div>
   <div class="dlg-foot"><button type="button" class="btn" data-close>Abbrechen</button><button class="btn primary" type="submit">Speichern</button></div>
+</form></dialog>
+
+<dialog id="dlg-paket" class="wide"><div class="dlg">
+  <div class="dlg-head"><div><h2>Paket übernehmen</h2><p class="small muted">Alle Positionen werden mit aktuellen Katalogpreisen ins Angebot eingefügt.</p></div><button type="button" class="btn ghost" data-close>Schliessen</button></div>
+  <div class="dlg-body"><div id="paket-list" class="stack-s"></div></div>
+</div></dialog>
+
+<dialog id="dlg-paket-save"><form class="dlg" id="form-paket" autocomplete="off">
+  <div class="dlg-head"><h2>Als Paket speichern</h2><button type="button" class="btn ghost" data-close>Schliessen</button></div>
+  <div class="dlg-body">
+    <p class="small muted">Alle Positionen dieses Angebots (mit Menge, Rabatt und Optionen) werden als wiederverwendbares Paket gespeichert.</p>
+    <div class="field"><label for="pk-name">Name des Pakets</label><input id="pk-name" name="name" required maxlength="120" placeholder="z. B. Zugprüfung Kunststoffe ISO 527"></div>
+    <div class="field"><label for="pk-besch">Beschreibung (optional)</label><textarea id="pk-besch" name="beschreibung" rows="2" maxlength="1000"></textarea></div>
+  </div>
+  <div class="dlg-foot"><button type="button" class="btn" data-close>Abbrechen</button><button class="btn primary" type="submit">Speichern</button></div>
+</form></dialog>
+
+<dialog id="dlg-kontakt"><form class="dlg" id="form-kontakt" autocomplete="off">
+  <div class="dlg-head"><h2 id="kontakt-title">Ansprechperson</h2><button type="button" class="btn ghost" data-close>Schliessen</button></div>
+  <div class="dlg-body">
+    <div class="field"><label for="kt-name">Name</label><input id="kt-name" name="name" required maxlength="120" placeholder="z. B. Frau Dr. Muster"></div>
+    <div class="field"><label for="kt-funktion">Funktion / Abteilung</label><input id="kt-funktion" name="funktion" maxlength="120" placeholder="z. B. Einkauf, Laborleitung"></div>
+    <div class="field"><label for="kt-email">E-Mail</label><input id="kt-email" name="email" type="email" maxlength="190"></div>
+    <div class="field"><label for="kt-tel">Telefon</label><input id="kt-tel" name="telefon" type="tel" maxlength="60"></div>
+  </div>
+  <div class="dlg-foot"><button type="button" class="btn danger left" data-action="delete-kontakt" id="kt-del">Löschen</button><button type="button" class="btn" data-close>Abbrechen</button><button class="btn primary" type="submit">Speichern</button></div>
 </form></dialog>
 
 <dialog id="dlg-artikel" class="wide"><form class="dlg" id="form-artikel" autocomplete="off">
