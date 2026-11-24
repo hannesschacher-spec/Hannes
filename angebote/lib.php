@@ -8,7 +8,7 @@ if (!is_file(__DIR__ . '/config.php')) {
 require __DIR__ . '/config.php';
 
 const APP_NAME = 'Angebotstool';
-const APP_VERSION = '1.1';
+const APP_VERSION = '1.2';
 
 const ROLES = ['admin', 'mitarbeit', 'lesen'];
 const STATUS = ['entwurf' => 'Entwurf', 'versendet' => 'Versendet', 'gewonnen' => 'Gewonnen', 'verloren' => 'Verloren'];
@@ -28,6 +28,8 @@ const SETTINGS_DEFAULTS = [
     'bedingungen' => "Lieferzeit: nach Vereinbarung\nZahlungsbedingungen: 30 Tage netto\nPreise ab Werk, zuzüglich Verpackung und Fracht",
     'fusstext' => 'Wir freuen uns auf Ihren Auftrag. Für Rückfragen stehen wir Ihnen gerne zur Verfügung.',
     'katalog_rev' => '0',
+    'ki_key' => '',
+    'ki_stil' => '',
 ];
 
 function db(): PDO

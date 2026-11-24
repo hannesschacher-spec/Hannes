@@ -19,6 +19,9 @@ auf eine eigene Hostinger-Website hochgeladen (Secrets `ANGEBOT_FTP_SERVER`, `AN
 - **Angebote**: Kunde, Positionen (aus Katalog oder frei), Menge, Preis, Rabatt pro Position und gesamt,
   Positionen als «Option» (nicht im Gesamtpreis), automatische Nummer (A-2026-0001), Status, Kopieren.
   Speichert automatisch.
+- **KI-Einleitung**: Knopf «✨ Mit KI formulieren» im Angebot schreibt die Einleitung mit Claude (Anthropic API).
+  API-Schlüssel und Stil-Vorgaben unter «Einstellungen» (Schlüssel wird nie an den Browser gegeben).
+  Gesendet werden nur Kundenfirma, Betreff, interne Notiz und Positionen.
 - **Druckansicht / PDF** (`druck.php`), mit Firmendaten und Bedingungen aus den Einstellungen.
 - **Rollen**: Administration (alles, inkl. Katalog), Mitarbeit (Angebote), Nur lesen.
 

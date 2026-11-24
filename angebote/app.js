@@ -298,7 +298,9 @@ function renderEditor() {
           <div id="ed-pos"></div>
         </section>
         <section class="card stack"><h3>Texte</h3>
-          <div class="field"><label for="ed-einleitung">Einleitung (steht im Angebot über den Positionen)</label><textarea id="ed-einleitung" data-f="einleitung" rows="3" maxlength="4000">${esc(A.einleitung)}</textarea></div>
+          <div class="field"><div class="row-between"><label for="ed-einleitung">Einleitung (steht im Angebot über den Positionen)</label>
+            ${canWrite ? `<button class="btn small-btn" data-action="ki-einleitung" title="${S.kiAktiv ? 'Text aus Kunde, Betreff und Positionen formulieren' : 'Noch nicht eingerichtet (Einstellungen)'}">✨ Mit KI formulieren</button>` : ''}</div>
+            <textarea id="ed-einleitung" data-f="einleitung" rows="5" maxlength="4000">${esc(A.einleitung)}</textarea></div>
           <div class="field"><label for="ed-notiz_intern">Interne Notiz (erscheint nicht im Angebot)</label><textarea id="ed-notiz_intern" data-f="notiz_intern" rows="3" maxlength="4000">${esc(A.notiz_intern)}</textarea></div>
         </section>
       </div>
@@ -621,6 +623,14 @@ function renderEinstellungen() {
       ${t('bedingungen', 'Lieferung und Zahlung (unter den Positionen)', 4)}
       ${t('fusstext', 'Schlusstext')}
     </div>
+    <h3>KI-Anschreiben</h3>
+    <p class="small muted">Mit einem API-Schlüssel von Anthropic (console.anthropic.com) kann die Einleitung eines Angebots per Klick formuliert werden.
+      An die KI gehen nur Firmenname des Kunden, Betreff, interne Notiz und Positionen, keine Ansprechpersonen oder Anschriften. Kosten: wenige Cent pro Text.</p>
+    <div class="grid2">
+      <div class="field"><label for="st-ki_key">API-Schlüssel ${S.kiAktiv ? '(gespeichert ✓)' : '(noch keiner)'}</label><input id="st-ki_key" name="ki_key" type="password" autocomplete="off" placeholder="${S.kiAktiv ? 'leer lassen = unverändert' : 'sk-ant-…'}"></div>
+      <div class="field">${S.kiAktiv ? '<label class="check" style="margin-top:24px"><input type="checkbox" name="ki_key_loeschen" value="1"> Schlüssel entfernen</label>' : ''}</div>
+      ${t('ki_stil', 'Stil-Vorgaben für die KI (optional), z. B. «immer Service und Kalibrierung erwähnen»', 2)}
+    </div>
     <div><button class="btn primary" type="submit">Speichern</button></div></form>`;
 }
 
@@ -730,6 +740,16 @@ document.addEventListener('click', async e => {
   if (act === 'new-kunde-wahl') openKundeDlg(null, {firma: $('#kw-q').value.trim()});
   if (act === 'kunde-aus-angebot') openKundeDlg(null, {firma: A.kunde_firma, kontakt: A.kunde_kontakt, email: A.kunde_email, adresse: A.kunde_adresse});
   if (act === 'pick') openPick();
+  if (act === 'ki-einleitung') {
+    if (!S.kiAktiv) { toast(isAdmin ? 'Bitte zuerst unter «Einstellungen» den API-Schlüssel eintragen.' : 'Die KI ist noch nicht eingerichtet. Bitte die Administration fragen.'); return; }
+    if (!A.positionen.length) { toast('Bitte zuerst Positionen hinzufügen.'); return; }
+    const alt = A.einleitung.trim();
+    if (alt && alt !== (S.settings.einleitung || '').trim() && !confirm('Die bisherige Einleitung wird ersetzt. Fortfahren?')) return;
+    a.disabled = true; const label = a.textContent; a.textContent = 'KI schreibt …';
+    const d = await call('ki_einleitung', payload(A));
+    a.disabled = false; a.textContent = label;
+    if (d && A) { A.einleitung = d.text; $('#ed-einleitung').value = d.text; scheduleSave(); toast('Einleitung erstellt. Bitte durchlesen und bei Bedarf anpassen.'); }
+  }
   if (act === 'add-art') addArtikel(a.dataset.id, $('#dlg-pick').open);
   if (act === 'free-pos') { A.positionen.push({_k: Math.random(), artikel_id: null, nr: '', bezeichnung: '', beschreibung: '', menge: 1, einheit: 'Stk.', preis: 0, rabatt: 0, optional: false}); changed(true); $$('#ed-pos [data-p=bezeichnung]').pop()?.focus(); }
   if (act === 'pos-up' || act === 'pos-down' || act === 'pos-del') {

@@ -89,7 +89,8 @@ function state(array $user): array
             'updatedAt' => iso($k['updated_at']),
         ], $pdo->query('SELECT * FROM kunden ORDER BY firma')->fetchAll()),
         'katalogRev' => $st['katalog_rev'],
-        'settings' => array_diff_key($st, ['katalog_rev' => 1]),
+        'settings' => array_diff_key($st, ['katalog_rev' => 1, 'ki_key' => 1]),
+        'kiAktiv' => $st['ki_key'] !== '',
     ];
     if ($user['role'] === 'admin') {
         $res['users'] = array_map(fn($u) => ['id' => (string)$u['id'], 'name' => $u['name'], 'email' => $u['email'], 'role' => $u['role'], 'active' => (bool)$u['active'], 'lastLogin' => iso($u['last_login'])],
@@ -178,6 +179,68 @@ function next_kundennummer(): string
     $n = max($start, $max + 1);
     if ($n > 99999) { fail('Es sind keine 5-stelligen Kundennummern mehr frei.'); }
     return (string)$n;
+}
+
+/** Schreibt mit Claude einen kurzen Einleitungstext für das Angebot. */
+function ki_einleitung(array $in, array $st): string
+{
+    if ($st['ki_key'] === '') { fail('Die KI ist noch nicht eingerichtet. Die Administration trägt den API-Schlüssel unter «Einstellungen» ein.'); }
+    $pos = is_array($in['positionen'] ?? null) ? array_slice($in['positionen'], 0, 80) : [];
+    $zeilen = [];
+    foreach ($pos as $p) {
+        if (!is_array($p) || s($p, 'bezeichnung', 200) === '') { continue; }
+        $zeilen[] = '- ' . (!empty($p['optional']) ? '[Option] ' : '') . menge_fmt(num($p, 'menge', 0, 99999999)) . ' × ' . s($p, 'bezeichnung', 200)
+            . (s($p, 'beschreibung', 400) !== '' ? ': ' . preg_replace('/\s+/', ' ', s($p, 'beschreibung', 400)) : '');
+    }
+    if (!$zeilen) { fail('Bitte zuerst Positionen ins Angebot aufnehmen.'); }
+    // Datenschutz: keine Ansprechpersonen, E-Mails oder Anschriften an die KI senden.
+    $angaben = "Anbieter: " . $st['firma_name'] . "\n"
+        . "Kunde (Firma): " . (s($in, 'kunde_firma', 200) ?: 'unbekannt') . "\n"
+        . "Betreff / Projekt: " . (s($in, 'titel', 200) ?: '–') . "\n"
+        . "Hinweis des Vertriebs (intern, nicht wörtlich übernehmen): " . (s($in, 'notiz_intern', 1500) ?: '–') . "\n"
+        . "Positionen:\n" . implode("\n", $zeilen);
+    $system = "Du schreibst für einen Hersteller von Werkstoffprüfmaschinen den Einleitungstext eines schriftlichen Angebots auf Deutsch. "
+        . "Der Text steht im Angebot direkt nach der Anrede und vor der Positionstabelle. Anrede, Grussformel, Preise und Bedingungen stehen schon an anderer Stelle im Dokument, "
+        . "deshalb enthält dein Text nichts davon. Schreibe 3 bis 5 Sätze in der Sie-Form: Dank für die Anfrage oder das Interesse, wofür die angebotene Konfiguration gedacht ist "
+        . "(Prüfaufgabe, Grundmaschine, wichtige Ausstattung), und ein kurzer Hinweis auf Optionen, falls welche dabei sind. Nenne nur Eigenschaften, die aus den Angaben hervorgehen, "
+        . "und erfinde keine Normen, Zahlen oder Zusagen. Ton: sachlich, freundlich, ohne Werbefloskeln. Gib nur den fertigen Text aus, ohne Überschrift und ohne Anführungszeichen."
+        . ($st['ki_stil'] !== '' ? "\n\nVorgaben der Firma zum Stil: " . $st['ki_stil'] : '');
+    $body = [
+        'model' => 'claude-opus-5-5',
+        'max_tokens' => 16000,
+        'output_config' => ['effort' => 'medium'],
+        'fallbacks' => 'default',
+        'system' => $system,
+        'messages' => [['role' => 'user', 'content' => "Angaben zum Angebot:\n" . $angaben]],
+    ];
+    @set_time_limit(150);
+    $ch = curl_init(defined('KI_URL') ? KI_URL : 'https://api.anthropic.com/v1/messages');
+    curl_setopt_array($ch, [
+        CURLOPT_POST => true, CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 120, CURLOPT_CONNECTTIMEOUT => 10,
+        CURLOPT_HTTPHEADER => ['Content-Type: application/json', 'x-api-key: ' . $st['ki_key'], 'anthropic-version: 2026-10-21', 'anthropic-beta: server-side-fallback-2026-07-01'],
+        CURLOPT_POSTFIELDS => json_encode($body, JSON_UNESCAPED_UNICODE),
+    ]);
+    $raw = curl_exec($ch);
+    $code = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $err = curl_error($ch);
+    curl_close($ch);
+    if ($raw === false) { error_log(APP_NAME . ' KI: ' . $err); fail('Die KI ist gerade nicht erreichbar. Bitte später erneut versuchen.', 502); }
+    $d = json_decode((string)$raw, true);
+    if ($code !== 200 || !is_array($d)) {
+        error_log(APP_NAME . ' KI HTTP ' . $code . ': ' . mb_substr((string)$raw, 0, 500));
+        fail(match (true) {
+            $code === 401 || $code === 403 => 'Der API-Schlüssel wird nicht akzeptiert. Bitte unter «Einstellungen» prüfen.',
+            $code === 429 => 'Zu viele KI-Anfragen auf einmal oder das Guthaben ist aufgebraucht. Bitte kurz warten.',
+            $code >= 500 => 'Die KI ist gerade überlastet. Bitte in einer Minute erneut versuchen.',
+            default => 'Die KI-Anfrage hat nicht geklappt (Fehler ' . $code . ').',
+        }, 502);
+    }
+    if (($d['stop_reason'] ?? '') === 'refusal') { fail('Die KI hat diesen Text nicht erstellt. Bitte die Einleitung selbst schreiben.', 502); }
+    $text = '';
+    foreach ($d['content'] ?? [] as $b) { if (($b['type'] ?? '') === 'text') { $text .= $b['text']; } }
+    $text = trim($text);
+    if ($text === '') { fail('Die KI hat keinen Text geliefert. Bitte erneut versuchen.', 502); }
+    return mb_substr($text, 0, 4000);
 }
 
 function save_positionen(int $aid, array $positionen): void
@@ -420,8 +483,19 @@ try {
             $v['gueltigkeit_tage'] = (string)(int)num($in, 'gueltigkeit_tage', 1, 365);
             $v['kunden_start'] = (string)(int)num($in, 'kunden_start', 10000, 99999);
             $v['nummer_prefix'] = preg_replace('/[^A-Za-z0-9]/', '', s($in, 'nummer_prefix', 10)) ?: 'A';
+            $v['ki_stil'] = s($in, 'ki_stil', 1000);
+            $key = trim((string)($in['ki_key'] ?? ''));
+            if (!empty($in['ki_key_loeschen'])) { $v['ki_key'] = ''; }
+            elseif ($key !== '') {
+                if (!preg_match('/^sk-ant-[A-Za-z0-9_\-]{20,}$/', $key)) { fail('Der API-Schlüssel sieht nicht richtig aus. Er beginnt mit «sk-ant-».'); }
+                $v['ki_key'] = $key;
+            }
             foreach ($v as $k => $x) { setting_set($k, $x); }
             out(['state' => state($user)]);
+
+        case 'ki_einleitung':
+            need($canWrite);
+            out(['text' => ki_einleitung($in, settings())]);
 
         case 'user_save':
             need($isAdmin);
