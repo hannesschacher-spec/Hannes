@@ -12,7 +12,7 @@ auf eine eigene Hostinger-Website hochgeladen (Secrets `ANGEBOT_FTP_SERVER`, `AN
   - **Nicht kombinierbar mit**: gilt in beide Richtungen, das Angebot zeigt einen Konflikt
 - **Import/Export als CSV** (Excel: «CSV UTF-8»). Spalten: Artikelnummer, Bezeichnung, Beschreibung,
   Kategorie, Preis, Einheit, Aktiv, Zubehör, Benötigt, Nicht kombinierbar mit (Nummern mit Komma getrennt).
-  Beispiel: `beispiel-katalog.csv` (wird nicht hochgeladen).
+  Beispiel: `beispiel-katalog.xlsx` (100 fiktive Artikel mit Anleitung) bzw. `beispiel-katalog.csv` (beide werden nicht hochgeladen).
 - **Kunden (Accounts)**: 5-stellige Kundennummer (automatisch ab 10001 oder selbst vergeben), Anschrift,
   Ansprechperson, Standardrabatt. Pro Kunde alle Angebote mit Summen (offen, gewonnen, verloren).
   Wird ein Kunde im Angebot gewählt, werden seine Daten übernommen. Die Kundennummer steht im gedruckten Angebot.

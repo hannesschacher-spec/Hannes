@@ -639,11 +639,14 @@ function parseCsv(text) {
 }
 const normHead = s => norm(s).replace(/[^a-z0-9]/g, '');
 function prepareImport(text) {
-  const rows = parseCsv(text);
+  let rows = parseCsv(text);
+  // Kopfzeile suchen (falls über der Tabelle noch Titelzeilen stehen)
+  const hi = rows.slice(0, 20).findIndex(r => r.some(c => COLS.nr.includes(normHead(c))));
+  if (hi > 0) rows = rows.slice(hi);
   if (rows.length < 2) return {error: 'Die Datei enthält keine Datenzeilen.'};
   const head = rows[0].map(normHead), map = {};
   for (const [key, names] of Object.entries(COLS)) { const i = head.findIndex(h => names.includes(h)); if (i > -1 && !Object.values(map).includes(i)) map[key] = i; }
-  if (map.nr === undefined) return {error: 'Keine Spalte «Artikelnummer» gefunden. Bitte die erste Zeile prüfen (Spaltennamen).'};
+  if (map.nr === undefined) return {error: 'Keine Spalte «Artikelnummer» gefunden. Wurde in Excel das richtige Blatt («Katalog») als CSV gespeichert? Die Spaltennamen müssen in der ersten Zeile stehen.'};
   const val = (r, k) => map[k] === undefined ? '' : String(r[map[k]] ?? '').trim();
   const data = rows.slice(1).map(r => {
     const o = {nr: val(r, 'nr')};
