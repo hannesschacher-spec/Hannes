@@ -8,7 +8,7 @@ if (!is_file(__DIR__ . '/config.php')) {
 require __DIR__ . '/config.php';
 
 const APP_NAME = 'Angebotstool';
-const APP_VERSION = '1.0';
+const APP_VERSION = '1.1';
 
 const ROLES = ['admin', 'mitarbeit', 'lesen'];
 const STATUS = ['entwurf' => 'Entwurf', 'versendet' => 'Versendet', 'gewonnen' => 'Gewonnen', 'verloren' => 'Verloren'];
@@ -23,6 +23,7 @@ const SETTINGS_DEFAULTS = [
     'mwst' => '19',
     'gueltigkeit_tage' => '60',
     'nummer_prefix' => 'A',
+    'kunden_start' => '10001',
     'einleitung' => "Vielen Dank für Ihre Anfrage. Gerne unterbreiten wir Ihnen folgendes Angebot:",
     'bedingungen' => "Lieferzeit: nach Vereinbarung\nZahlungsbedingungen: 30 Tage netto\nPreise ab Werk, zuzüglich Verpackung und Fracht",
     'fusstext' => 'Wir freuen uns auf Ihren Auftrag. Für Rückfragen stehen wir Ihnen gerne zur Verfügung.',
@@ -44,8 +45,31 @@ function db(): PDO
             ]
         );
         $pdo->exec("SET time_zone = '+00:00'");
+        migrate($pdo);
     }
     return $pdo;
+}
+
+// Bringt eine schon eingerichtete Datenbank auf den neuesten Stand (läuft nur einmal pro Version).
+const SCHEMA_VERSION = '2';
+function migrate(PDO $pdo): void
+{
+    $v = $pdo->query("SELECT v FROM einstellungen WHERE k = 'schema'")->fetchColumn();
+    if ($v === SCHEMA_VERSION) {
+        return;
+    }
+    // Version 2: Kunden (Accounts)
+    $pdo->exec("CREATE TABLE IF NOT EXISTS kunden (
+      id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, nummer CHAR(5) NOT NULL UNIQUE, firma VARCHAR(200) NOT NULL,
+      kontakt VARCHAR(120) NOT NULL DEFAULT '', email VARCHAR(190) NOT NULL DEFAULT '', telefon VARCHAR(60) NOT NULL DEFAULT '',
+      adresse TEXT NULL, notiz TEXT NULL, rabatt DECIMAL(5,2) NOT NULL DEFAULT 0,
+      created_at DATETIME NOT NULL, updated_at DATETIME NOT NULL, INDEX (firma)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+    if (!$pdo->query("SHOW COLUMNS FROM angebote LIKE 'kunde_id'")->fetch()) {
+        $pdo->exec('ALTER TABLE angebote ADD COLUMN kunde_id INT UNSIGNED NULL AFTER nummer, ADD INDEX (kunde_id),
+            ADD FOREIGN KEY (kunde_id) REFERENCES kunden(id) ON DELETE SET NULL');
+    }
+    $pdo->prepare("INSERT INTO einstellungen (k, v) VALUES ('schema', ?) ON DUPLICATE KEY UPDATE v = VALUES(v)")->execute([SCHEMA_VERSION]);
 }
 
 function security_headers(): void

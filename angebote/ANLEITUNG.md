@@ -13,6 +13,9 @@ auf eine eigene Hostinger-Website hochgeladen (Secrets `ANGEBOT_FTP_SERVER`, `AN
 - **Import/Export als CSV** (Excel: «CSV UTF-8»). Spalten: Artikelnummer, Bezeichnung, Beschreibung,
   Kategorie, Preis, Einheit, Aktiv, Zubehör, Benötigt, Nicht kombinierbar mit (Nummern mit Komma getrennt).
   Beispiel: `beispiel-katalog.csv` (wird nicht hochgeladen).
+- **Kunden (Accounts)**: 5-stellige Kundennummer (automatisch ab 10001 oder selbst vergeben), Anschrift,
+  Ansprechperson, Standardrabatt. Pro Kunde alle Angebote mit Summen (offen, gewonnen, verloren).
+  Wird ein Kunde im Angebot gewählt, werden seine Daten übernommen. Die Kundennummer steht im gedruckten Angebot.
 - **Angebote**: Kunde, Positionen (aus Katalog oder frei), Menge, Preis, Rabatt pro Position und gesamt,
   Positionen als «Option» (nicht im Gesamtpreis), automatische Nummer (A-2026-0001), Status, Kopieren.
   Speichert automatisch.
@@ -20,3 +23,5 @@ auf eine eigene Hostinger-Website hochgeladen (Secrets `ANGEBOT_FTP_SERVER`, `AN
 - **Rollen**: Administration (alles, inkl. Katalog), Mitarbeit (Angebote), Nur lesen.
 
 Positionen werden als Kopie gespeichert: Spätere Preisänderungen im Katalog verändern alte Angebote nicht.
+
+Datenbank-Updates laufen automatisch (`migrate()` in `lib.php`), es muss nichts von Hand geändert werden.

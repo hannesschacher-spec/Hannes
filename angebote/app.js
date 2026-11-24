@@ -9,8 +9,8 @@ const ROLLEN = {admin: 'Administration', mitarbeit: 'Mitarbeit', lesen: 'Nur les
 const STATUS = {entwurf: 'Entwurf', versendet: 'Versendet', gewonnen: 'Gewonnen', verloren: 'Verloren'};
 const TYPEN = {passt: 'Zubehör', passtAn: 'Zubehör für', benoetigt: 'Benötigt', ausschluss: 'Nicht kombinierbar mit'};
 
-let S = {angebote: [], settings: {}, users: [], katalogRev: null}, loaded = false, offline = false, busy = false;
-let view = 'angebote', editUserId = null, editArtikelId = null;
+let S = {angebote: [], kunden: [], settings: {}, users: [], katalogRev: null}, loaded = false, offline = false, busy = false;
+let view = 'angebote', editUserId = null, editArtikelId = null, kundeId = null, editKundeId = null, backTo = 'angebote';
 // Katalog mit schnellen Nachschlagetabellen
 const K = {rev: null, loaded: false, list: [], byId: new Map(), byNr: new Map(), kategorien: [],
   passt: new Map(), passtAn: new Map(), benoetigt: new Map(), benoetigtVon: new Map(), ausschluss: new Map()};
@@ -72,7 +72,7 @@ async function load() {
   catch (e) { if (e.message !== 'login') offline = true; }
   render();
 }
-function setState(st) { S = st; S.users = S.users || []; loaded = true; }
+function setState(st) { S = st; S.users = S.users || []; S.kunden = S.kunden || []; loaded = true; }
 async function syncKatalog() { if (S.katalogRev !== K.rev) buildKatalog(await get('katalog')); }
 async function call(action, body, {quiet = false} = {}) {
   busy = true;
@@ -108,12 +108,13 @@ const katOptions = (sel, all = 'Alle Kategorien') => `<option value="">${all}</o
 /* ---------- Ansicht allgemein ---------- */
 function render() {
   $('#banners').innerHTML = (offline ? '<div class="banner err">Keine Verbindung zum Server. Änderungen werden gespeichert, sobald die Verbindung wieder da ist.</div>' : '') + (!canWrite ? '<div class="banner warn">Sie haben nur Leserechte.</div>' : '');
-  renderAngebotListe(); renderKatalogListe(); renderBenutzer();
+  renderAngebotListe(); renderKundenListe(); renderKunde(); renderKatalogListe(); renderBenutzer();
+  if (view === 'editor') renderEdKunde();
 }
 function showView(v) {
   if (v) view = v;
   for (const s of $$('main > section')) s.hidden = s.id !== 'view-' + view;
-  const tabView = view === 'editor' ? 'angebote' : view;
+  const tabView = view === 'editor' ? (backTo === 'kunde' ? 'kunden' : 'angebote') : view === 'kunde' ? 'kunden' : view;
   for (const t of $$('.tab')) t.setAttribute('aria-selected', t.dataset.view === tabView);
   if (view === 'einstellungen') renderEinstellungen();
   window.scrollTo(0, 0);
@@ -123,7 +124,7 @@ function showView(v) {
 function shellAngebote() {
   $('#view-angebote').innerHTML = `<div class="stack">
     <div class="toolbar">
-      <input type="search" id="a-q" placeholder="Suchen: Nummer, Kunde, Betreff" aria-label="Angebote suchen">
+      <input type="search" id="a-q" placeholder="Suchen: Angebots- oder Kundennummer, Kunde, Betreff" aria-label="Angebote suchen">
       <select id="a-status" aria-label="Status"><option value="">Alle Status</option>${Object.entries(STATUS).map(([k, v]) => `<option value="${k}">${v}</option>`).join('')}</select>
       ${canWrite ? '<button class="btn primary" data-action="new-angebot">+ Neues Angebot</button>' : ''}
     </div>
@@ -133,29 +134,133 @@ function renderAngebotListe() {
   const el = $('#a-list'); if (!el) return;
   if (!loaded) { el.innerHTML = '<p class="muted">Wird geladen …</p>'; return; }
   const q = norm($('#a-q').value), st = $('#a-status').value;
-  const list = S.angebote.filter(a => (!st || a.status === st) && (!q || q.split(/\s+/).every(t => norm(`${a.nummer} ${a.kunde} ${a.titel} ${a.von}`).includes(t))));
+  const list = S.angebote.filter(a => (!st || a.status === st) && (!q || q.split(/\s+/).every(t => norm(`${a.nummer} ${a.kundeNr} ${a.kunde} ${a.titel} ${a.von}`).includes(t))));
   if (!S.angebote.length) { el.innerHTML = `<div class="empty">Noch keine Angebote.${canWrite ? ' Mit «+ Neues Angebot» geht es los.' : ''}${K.list.length ? '' : '<br>Tipp: Zuerst unter «Katalog» die Artikel importieren.'}</div>`; return; }
-  el.innerHTML = list.length ? list.map(a => `<button class="card item" data-action="open-angebot" data-id="${a.id}">
+  el.innerHTML = list.length ? list.map(a => angebotCard(a)).join('') : '<div class="empty">Keine Angebote gefunden.</div>';
+}
+function angebotCard(a, mitKunde = true) {
+  return `<button class="card item" data-action="open-angebot" data-id="${a.id}">
       <div class="item-main"><div><strong>${esc(a.nummer)}</strong> <span class="pill s-${a.status}">${STATUS[a.status]}</span></div>
-        <div>${esc(a.kunde || 'Ohne Kunde')}${a.titel ? ' · ' + esc(a.titel) : ''}</div>
+        <div>${mitKunde ? (a.kundeNr ? `<span class="muted">${esc(a.kundeNr)}</span> ` : '') + esc(a.kunde || 'Ohne Kunde') : ''}${a.titel ? (mitKunde ? ' · ' : '') + esc(a.titel) : ''}</div>
         <div class="small muted">${fmtD(a.datum)} · ${esc(a.von)} · ${a.anzahl} Pos. · geändert ${fmtT(a.updatedAt)}</div></div>
-      <div class="item-side"><strong>${money(a.netto)}</strong><div class="small muted">netto</div></div></button>`).join('')
-    : '<div class="empty">Keine Angebote gefunden.</div>';
+      <div class="item-side"><strong>${money(a.netto)}</strong><div class="small muted">netto</div></div></button>`;
+}
+
+/* ---------- Kunden ---------- */
+const ort = k => (k.adresse || '').split('\n').map(x => x.trim()).filter(Boolean).pop() || '';
+const kundeAngebote = id => S.angebote.filter(a => a.kundeId === id);
+function shellKunden() {
+  $('#view-kunden').innerHTML = `<div class="stack">
+    <div class="toolbar">
+      <input type="search" id="ku-q" placeholder="Suchen: Kundennummer, Firma, Ort, Ansprechperson" aria-label="Kunden suchen">
+      ${canWrite ? '<button class="btn primary" data-action="new-kunde">+ Neuer Kunde</button>' : ''}
+    </div>
+    <div id="ku-list" class="stack-s"></div></div>`;
+}
+const kundeMatch = (k, q) => !q || norm(q).split(/\s+/).filter(Boolean).every(t => norm(`${k.nummer} ${k.firma} ${k.kontakt} ${k.adresse} ${k.email}`).includes(t));
+function renderKundenListe() {
+  const el = $('#ku-list'); if (!el) return;
+  if (!loaded) { el.innerHTML = '<p class="muted">Wird geladen …</p>'; return; }
+  if (!S.kunden.length) { el.innerHTML = `<div class="empty">Noch keine Kunden.${canWrite ? ' Mit «+ Neuer Kunde» legen Sie den ersten an. Die Kundennummer wird automatisch vergeben.' : ''}</div>`; return; }
+  const list = S.kunden.filter(k => kundeMatch(k, $('#ku-q').value));
+  el.innerHTML = list.length ? list.map(k => {
+    const an = kundeAngebote(k.id), offen = an.filter(a => a.status === 'entwurf' || a.status === 'versendet');
+    return `<button class="card item" data-action="open-kunde" data-id="${k.id}">
+      <div class="item-main"><div><span class="knr">${esc(k.nummer)}</span> <strong>${esc(k.firma)}</strong></div>
+        <div class="small muted">${[k.kontakt, ort(k)].filter(Boolean).map(esc).join(' · ') || '&nbsp;'}</div></div>
+      <div class="item-side"><strong>${an.length} Angebot${an.length === 1 ? '' : 'e'}</strong><div class="small muted">${offen.length ? `${offen.length} offen · ${money(offen.reduce((x, a) => x + a.netto, 0))}` : '–'}</div></div></button>`;
+  }).join('') : '<div class="empty">Keine Kunden gefunden.</div>';
+}
+function openKunde(id) {
+  kundeId = id; history.replaceState(null, '', '#kunde=' + id);
+  renderKunde(); showView('kunde');
+}
+function renderKunde() {
+  const el = $('#view-kunde'); if (!el || !kundeId || !loaded) return;
+  const k = S.kunden.find(x => x.id === kundeId);
+  if (!k) { el.innerHTML = '<div class="empty">Diesen Kunden gibt es nicht mehr. <button class="btn ghost" data-action="back-kunden">Zu allen Kunden</button></div>'; return; }
+  const an = kundeAngebote(k.id), sum = st => an.filter(a => st.includes(a.status)).reduce((x, a) => x + a.netto, 0);
+  const row = (l, v) => v ? `<div class="kv"><span class="muted small">${l}</span><span>${v}</span></div>` : '';
+  el.innerHTML = `<div class="stack">
+    <div class="ed-head">
+      <button class="btn ghost" data-action="back-kunden">← Alle Kunden</button>
+      <div class="ed-title"><span class="small muted">Kunde ${esc(k.nummer)}</span><h2>${esc(k.firma)}</h2></div>
+      <div class="ed-actions">
+        ${canWrite ? `<button class="btn primary" data-action="new-angebot-kunde">+ Neues Angebot</button><button class="btn" data-action="edit-kunde">Bearbeiten</button>` : ''}
+        ${isAdmin ? '<button class="btn danger" data-action="delete-kunde">Löschen</button>' : ''}
+      </div>
+    </div>
+    <div class="ed-grid">
+      <div class="stack">
+        <h3>Angebote (${an.length})</h3>
+        ${an.length ? an.map(a => angebotCard(a, false)).join('') : `<div class="empty">Noch keine Angebote für diesen Kunden.${canWrite ? ' Mit «+ Neues Angebot» geht es los, die Kundendaten werden übernommen.' : ''}</div>`}
+      </div>
+      <aside class="stack ed-side">
+        <section class="card stack"><h3>Kundendaten</h3>
+          ${row('Kundennummer', esc(k.nummer))}${row('Ansprechperson', esc(k.kontakt))}${row('Anschrift', esc(k.adresse).replace(/\n/g, '<br>'))}
+          ${row('E-Mail', k.email ? `<a href="mailto:${esc(k.email)}">${esc(k.email)}</a>` : '')}${row('Telefon', k.telefon ? `<a href="tel:${esc(k.telefon.replace(/[^+0-9]/g, ''))}">${esc(k.telefon)}</a>` : '')}
+          ${row('Standardrabatt', k.rabatt ? numIn(k.rabatt) + ' %' : '')}${row('Notiz', esc(k.notiz).replace(/\n/g, '<br>'))}
+        </section>
+        <section class="card stack"><h3>Übersicht</h3>
+          <div class="sumrow"><span>Offen (Entwurf, versendet)</span><strong>${money(sum(['entwurf', 'versendet']))}</strong></div>
+          <div class="sumrow"><span>Gewonnen</span><strong>${money(sum(['gewonnen']))}</strong></div>
+          <div class="sumrow muted"><span>Verloren</span><span>${money(sum(['verloren']))}</span></div>
+          <p class="small muted">Beträge netto, ohne Optionen.</p>
+        </section>
+      </aside>
+    </div></div>`;
+}
+function openKundeDlg(id, vorlage) {
+  const k = id ? S.kunden.find(x => x.id === id) : (vorlage || null), f = $('#form-kunde'); f.reset(); editKundeId = id || null;
+  $('#kunde-title').textContent = id ? 'Kunde bearbeiten' : 'Neuer Kunde';
+  for (const n of ['nummer', 'firma', 'kontakt', 'email', 'telefon', 'adresse', 'notiz']) f[n].value = (k && k[n]) || '';
+  f.rabatt.value = k && k.rabatt ? numIn(k.rabatt) : '';
+  const next = Math.max(parseInt(S.settings.kunden_start, 10) || 10001, ...S.kunden.map(x => +x.nummer + 1));
+  f.nummer.placeholder = `automatisch (${next})`;
+  $('#dlg-kunde').dataset.forEditor = vorlage ? '1' : '';
+  $('#dlg-kunde').showModal();
+}
+// Kunde ins Angebot übernehmen
+function applyKunde(k) {
+  if (!A || !k) return;
+  A.kunde_id = k.id; A.kunde_firma = k.firma; A.kunde_kontakt = k.kontakt; A.kunde_email = k.email; A.kunde_adresse = k.adresse;
+  if (!A.rabatt && k.rabatt) A.rabatt = k.rabatt;
+  for (const n of ['kunde_firma', 'kunde_kontakt', 'kunde_email', 'kunde_adresse']) { const i = $('#ed-' + n); if (i) i.value = A[n] || ''; }
+  const r = $('#ed-rabatt'); if (r) r.value = numIn(A.rabatt);
+  renderEdKunde(); updateSums(); scheduleSave();
+}
+function renderEdKunde() {
+  const el = $('#ed-kunde'); if (!el || !A) return;
+  const k = A.kunde_id ? S.kunden.find(x => x.id === A.kunde_id) : null;
+  el.innerHTML = k
+    ? `<div class="kunde-box"><div><span class="small muted">Kunde</span><div><span class="knr">${esc(k.nummer)}</span> <strong>${esc(k.firma)}</strong></div></div>
+        <div class="btn-row"><button class="btn" data-action="goto-kunde" data-id="${k.id}">Zum Kunden</button>${canWrite ? '<button class="btn ghost" data-action="pick-kunde">Anderen Kunden wählen</button>' : ''}</div></div>`
+    : `<div class="kunde-box none"><div><strong>Kein Kunde ausgewählt.</strong><div class="small muted">Kunde auswählen, dann werden Anschrift und Ansprechperson übernommen.</div></div>
+        ${canWrite ? `<div class="btn-row"><button class="btn primary" data-action="pick-kunde">Kunde auswählen</button>${A.kunde_firma ? '<button class="btn" data-action="kunde-aus-angebot">Als neuen Kunden anlegen</button>' : ''}</div>` : ''}</div>`;
+}
+function renderKundeWahl() {
+  const q = $('#kw-q').value, list = S.kunden.filter(k => kundeMatch(k, q));
+  $('#kw-list').innerHTML = list.length ? list.slice(0, 100).map(k => `<button class="card item" data-action="choose-kunde" data-id="${k.id}">
+      <div class="item-main"><div><span class="knr">${esc(k.nummer)}</span> <strong>${esc(k.firma)}</strong></div><div class="small muted">${[k.kontakt, ort(k)].filter(Boolean).map(esc).join(' · ')}</div></div>
+      <div class="item-side small muted">${kundeAngebote(k.id).length} Angebote</div></button>`).join('')
+    : `<div class="empty">${S.kunden.length ? 'Kein Kunde gefunden.' : 'Noch keine Kunden angelegt.'}</div>`;
 }
 
 /* ---------- Angebot: Editor ---------- */
-async function openAngebot(id) {
+async function openAngebot(id, fuerKunde = null, from = null) {
   if (!(await flushSave())) return;
+  backTo = from || (view === 'kunde' ? 'kunde' : view === 'editor' ? backTo : 'angebote');
   let a;
   if (id) {
     try { a = (await get('angebot', {id})).angebot; }
     catch (e) { toast(e.message); history.replaceState(null, '', location.pathname); showView('angebote'); return; }
   } else {
-    a = {id: null, nummer: '', titel: '', kunde_firma: '', kunde_kontakt: '', kunde_email: '', kunde_adresse: '', status: 'entwurf',
+    a = {id: null, nummer: '', kunde_id: null, titel: '', kunde_firma: '', kunde_kontakt: '', kunde_email: '', kunde_adresse: '', status: 'entwurf',
       datum: today(), gueltig_bis: today(parseInt(S.settings.gueltigkeit_tage, 10) || 60), rabatt: 0,
       einleitung: S.settings.einleitung || '', notiz_intern: '', erstellt_von: ME.name, positionen: []};
   }
   a.positionen.forEach(p => p._k = Math.random());
+  if (fuerKunde) { const k = S.kunden.find(x => x.id === fuerKunde); if (k) Object.assign(a, {kunde_id: k.id, kunde_firma: k.firma, kunde_kontakt: k.kontakt, kunde_email: k.email, kunde_adresse: k.adresse, rabatt: k.rabatt || 0}); }
   A = a; dirty = false;
   if (A.id) history.replaceState(null, '', '#angebot=' + A.id);
   renderEditor(); showView('editor');
@@ -164,7 +269,7 @@ function renderEditor() {
   const f = (k, label, extra = '') => `<div class="field"><label for="ed-${k}">${label}</label><input id="ed-${k}" data-f="${k}" value="${esc(A[k])}" ${extra}></div>`;
   $('#view-editor').innerHTML = `<div class="stack">
     <div class="ed-head">
-      <button class="btn ghost" data-action="back">← Alle Angebote</button>
+      <button class="btn ghost" data-action="back">${backTo === 'kunde' ? '← Zurück zum Kunden' : '← Alle Angebote'}</button>
       <div class="ed-title"><h2 id="ed-nummer"></h2><span id="ed-save" class="small muted" aria-live="polite"></span></div>
       <div class="ed-actions">
         <button class="btn" data-action="print">Drucken / PDF</button>
@@ -175,6 +280,7 @@ function renderEditor() {
     <div class="ed-grid">
       <div class="stack">
         <section class="card stack"><h3>Kunde und Angebot</h3>
+          <div id="ed-kunde"></div>
           <div class="grid2">
             ${f('kunde_firma', 'Firma', 'maxlength="200" placeholder="Kunde"')}
             ${f('kunde_kontakt', 'Ansprechperson', 'maxlength="120"')}
@@ -210,7 +316,7 @@ function renderEditor() {
         <section class="card stack" id="ed-check"></section>
       </aside>
     </div></div>`;
-  updateHead(); renderPositionen(); renderCheck(); updateSums(); setSave(A.id ? 'Gespeichert' : '');
+  updateHead(); renderEdKunde(); renderPositionen(); renderCheck(); updateSums(); setSave(A.id ? 'Gespeichert' : '');
   if (!canWrite) for (const i of $$('#view-editor input, #view-editor textarea, #view-editor select')) i.disabled = true;
 }
 function updateHead() { $('#ed-nummer').textContent = A.nummer ? `Angebot ${A.nummer}` : 'Neues Angebot'; }
@@ -510,6 +616,7 @@ function renderEinstellungen() {
       ${f('mwst', 'MwSt.-Satz in %', 'inputmode="decimal"')}
       ${f('gueltigkeit_tage', 'Angebot gültig (Tage)', 'inputmode="numeric"')}
       ${f('nummer_prefix', 'Kürzel für Angebotsnummer (z. B. A → A-2026-0001)', 'maxlength="10"')}
+      ${f('kunden_start', 'Erste Kundennummer (5-stellig)', 'inputmode="numeric" maxlength="5"')}
       ${t('einleitung', 'Standard-Einleitung für neue Angebote')}
       ${t('bedingungen', 'Lieferung und Zahlung (unter den Positionen)', 4)}
       ${t('fusstext', 'Schlusstext')}
@@ -542,10 +649,13 @@ document.addEventListener('input', e => {
   if (t.id === 'a-q') return renderAngebotListe();
   if (t.id === 'k-q') return renderKatalogListe();
   if (t.id === 'pick-q') return renderPick();
+  if (t.id === 'ku-q') return renderKundenListe();
+  if (t.id === 'kw-q') return renderKundeWahl();
   if (!A || !canWrite || !t.closest('#view-editor')) return;
   if (t.dataset.f) {
     A[t.dataset.f] = t.dataset.f === 'rabatt' ? Math.min(100, Math.max(0, parseNum(t.value))) : t.value;
     if (t.dataset.f === 'rabatt') updateSums();
+    if (t.dataset.f === 'kunde_firma' && !A.kunde_id) renderEdKunde();
     return scheduleSave();
   }
   const row = t.closest('.pos'); if (!row || !t.dataset.p) return;
@@ -581,20 +691,44 @@ document.addEventListener('submit', async e => {
     if (d) { $('#dlg-artikel').close(); toast('Artikel gespeichert'); }
   }
   if (f.id === 'form-import' && IMP && !IMP.error) runImport();
+  if (f.id === 'form-kunde') {
+    const v = Object.fromEntries(new FormData(f)); v.id = editKundeId; v.rabatt = parseNum(v.rabatt);
+    const d = await call('kunde_save', v);
+    if (d) {
+      const dlg = $('#dlg-kunde'); dlg.close(); toast(`Kunde ${d.kunde.nummer} gespeichert`);
+      if (dlg.dataset.forEditor && A) { applyKunde(S.kunden.find(x => x.id === d.kunde.id)); $('#dlg-kundewahl').close(); }
+      else if (!editKundeId) openKunde(d.kunde.id);
+    }
+  }
   if (f.id === 'form-settings') { const v = Object.fromEntries(new FormData(f)); if (await call('settings_save', v)) { renderEinstellungen(); toast('Einstellungen gespeichert'); } }
 });
 document.addEventListener('click', async e => {
   if (e.target.closest('[data-close]')) { e.target.closest('dialog')?.close(); return; }
   const t = e.target.closest('.tab');
   if (t) {
-    if (view === 'editor') { if (!(await flushSave())) return; A = null; history.replaceState(null, '', location.pathname); }
-    showView(t.dataset.view); renderAngebotListe(); return;
+    if (view === 'editor') { if (!(await flushSave())) return; A = null; }
+    history.replaceState(null, '', location.pathname); kundeId = t.dataset.view === 'kunden' ? null : kundeId;
+    showView(t.dataset.view); renderAngebotListe(); renderKundenListe(); return;
   }
   const a = e.target.closest('[data-action]'); if (!a || a.disabled) return;
   const act = a.dataset.action;
-  if (act === 'new-angebot') openAngebot(null);
+  if (act === 'new-angebot') openAngebot(null, null, 'angebote');
   if (act === 'open-angebot') openAngebot(a.dataset.id);
-  if (act === 'back') { if (await flushSave()) { A = null; history.replaceState(null, '', location.pathname); showView('angebote'); renderAngebotListe(); } }
+  if (act === 'back') { if (await flushSave()) { A = null; if (backTo === 'kunde' && kundeId) openKunde(kundeId); else { history.replaceState(null, '', location.pathname); showView('angebote'); } } }
+  if (act === 'open-kunde' || act === 'goto-kunde') { if (view === 'editor') { if (!(await flushSave())) return; A = null; } openKunde(a.dataset.id); }
+  if (act === 'back-kunden') { kundeId = null; history.replaceState(null, '', location.pathname); showView('kunden'); }
+  if (act === 'new-kunde') openKundeDlg(null);
+  if (act === 'edit-kunde') openKundeDlg(kundeId);
+  if (act === 'new-angebot-kunde') openAngebot(null, kundeId, 'kunde');
+  if (act === 'delete-kunde') {
+    const k = S.kunden.find(x => x.id === kundeId); if (!k) return;
+    if (!confirm(`Kunde ${k.nummer} ${k.firma} löschen? Die Angebote bleiben erhalten, sind aber keinem Kunden mehr zugeordnet.`)) return;
+    if (await call('kunde_delete', {id: k.id})) { kundeId = null; history.replaceState(null, '', location.pathname); showView('kunden'); toast('Kunde gelöscht'); }
+  }
+  if (act === 'pick-kunde') { $('#kw-q').value = ''; renderKundeWahl(); $('#dlg-kundewahl').showModal(); }
+  if (act === 'choose-kunde') { applyKunde(S.kunden.find(x => x.id === a.dataset.id)); $('#dlg-kundewahl').close(); }
+  if (act === 'new-kunde-wahl') openKundeDlg(null, {firma: $('#kw-q').value.trim()});
+  if (act === 'kunde-aus-angebot') openKundeDlg(null, {firma: A.kunde_firma, kontakt: A.kunde_kontakt, email: A.kunde_email, adresse: A.kunde_adresse});
   if (act === 'pick') openPick();
   if (act === 'add-art') addArtikel(a.dataset.id, $('#dlg-pick').open);
   if (act === 'free-pos') { A.positionen.push({_k: Math.random(), artikel_id: null, nr: '', bezeichnung: '', beschreibung: '', menge: 1, einheit: 'Stk.', preis: 0, rabatt: 0, optional: false}); changed(true); $$('#ed-pos [data-p=bezeichnung]').pop()?.focus(); }
@@ -635,8 +769,11 @@ document.addEventListener('click', async e => {
 });
 window.addEventListener('beforeunload', e => { if (A && (dirty || saving)) { saveNow(); e.preventDefault(); e.returnValue = ''; } });
 
-shellAngebote(); shellKatalog(); showView(); render();
-const fromHash = () => { const m = location.hash.match(/^#angebot=(\d+)$/); if (m && (!A || A.id !== m[1])) openAngebot(m[1]); };
+shellAngebote(); shellKunden(); shellKatalog(); showView(); render();
+const fromHash = () => {
+  const m = location.hash.match(/^#angebot=(\d+)$/); if (m && (!A || A.id !== m[1])) return openAngebot(m[1], null, 'angebote');
+  const k = location.hash.match(/^#kunde=(\d+)$/); if (k && kundeId !== k[1]) openKunde(k[1]);
+};
 load().then(fromHash);
 window.addEventListener('hashchange', fromHash);
 // Neuen Stand holen, solange sichtbar und kein Dialog offen ist

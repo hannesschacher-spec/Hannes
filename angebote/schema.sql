@@ -42,9 +42,26 @@ CREATE TABLE IF NOT EXISTS artikel_beziehung (
   FOREIGN KEY (zu_id) REFERENCES artikel(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Kunden (Accounts) mit 5-stelliger Kundennummer
+CREATE TABLE IF NOT EXISTS kunden (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  nummer CHAR(5) NOT NULL UNIQUE,
+  firma VARCHAR(200) NOT NULL,
+  kontakt VARCHAR(120) NOT NULL DEFAULT '',
+  email VARCHAR(190) NOT NULL DEFAULT '',
+  telefon VARCHAR(60) NOT NULL DEFAULT '',
+  adresse TEXT NULL,
+  notiz TEXT NULL,
+  rabatt DECIMAL(5,2) NOT NULL DEFAULT 0,
+  created_at DATETIME NOT NULL,
+  updated_at DATETIME NOT NULL,
+  INDEX (firma)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE IF NOT EXISTS angebote (
   id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   nummer VARCHAR(30) NOT NULL UNIQUE,
+  kunde_id INT UNSIGNED NULL,
   titel VARCHAR(200) NOT NULL DEFAULT '',
   kunde_firma VARCHAR(200) NOT NULL DEFAULT '',
   kunde_kontakt VARCHAR(120) NOT NULL DEFAULT '',
@@ -60,7 +77,9 @@ CREATE TABLE IF NOT EXISTS angebote (
   bearbeitet_von VARCHAR(80) NOT NULL DEFAULT '',
   created_at DATETIME NOT NULL,
   updated_at DATETIME NOT NULL,
-  INDEX (updated_at)
+  INDEX (updated_at),
+  INDEX (kunde_id),
+  FOREIGN KEY (kunde_id) REFERENCES kunden(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Positionen werden als Kopie gespeichert, damit spaetere Katalogaenderungen alte Angebote nicht veraendern

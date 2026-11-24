@@ -72,16 +72,22 @@ function state(array $user): array
 {
     $pdo = db();
     $st = settings();
-    $rows = $pdo->query("SELECT a.id, a.nummer, a.titel, a.kunde_firma, a.status, a.datum, a.erstellt_von, a.updated_at, a.rabatt,
+    $rows = $pdo->query("SELECT a.id, a.nummer, a.kunde_id, k.nummer AS kunde_nr, a.titel, a.kunde_firma, a.status, a.datum, a.erstellt_von, a.updated_at, a.rabatt,
         COALESCE((SELECT SUM(p.menge * p.preis * (1 - p.rabatt / 100)) FROM angebot_positionen p WHERE p.angebot_id = a.id AND p.optional = 0), 0) AS summe,
         (SELECT COUNT(*) FROM angebot_positionen p WHERE p.angebot_id = a.id) AS anzahl
-        FROM angebote a ORDER BY a.updated_at DESC LIMIT 2000")->fetchAll();
+        FROM angebote a LEFT JOIN kunden k ON k.id = a.kunde_id ORDER BY a.updated_at DESC LIMIT 2000")->fetchAll();
     $res = [
         'angebote' => array_map(fn($r) => [
             'id' => (string)$r['id'], 'nummer' => $r['nummer'], 'titel' => $r['titel'], 'kunde' => $r['kunde_firma'],
+            'kundeId' => $r['kunde_id'] !== null ? (string)$r['kunde_id'] : null, 'kundeNr' => $r['kunde_nr'] ?? '',
             'status' => $r['status'], 'datum' => $r['datum'], 'von' => $r['erstellt_von'], 'updatedAt' => iso($r['updated_at']),
             'netto' => round((float)$r['summe'] * (1 - (float)$r['rabatt'] / 100), 2), 'anzahl' => (int)$r['anzahl'],
         ], $rows),
+        'kunden' => array_map(fn($k) => [
+            'id' => (string)$k['id'], 'nummer' => $k['nummer'], 'firma' => $k['firma'], 'kontakt' => $k['kontakt'], 'email' => $k['email'],
+            'telefon' => $k['telefon'], 'adresse' => $k['adresse'] ?? '', 'notiz' => $k['notiz'] ?? '', 'rabatt' => (float)$k['rabatt'],
+            'updatedAt' => iso($k['updated_at']),
+        ], $pdo->query('SELECT * FROM kunden ORDER BY firma')->fetchAll()),
         'katalogRev' => $st['katalog_rev'],
         'settings' => array_diff_key($st, ['katalog_rev' => 1]),
     ];
@@ -115,7 +121,7 @@ function angebot_load(int $id): ?array
     $p = db()->prepare('SELECT * FROM angebot_positionen WHERE angebot_id = ? ORDER BY pos, id');
     $p->execute([$id]);
     return [
-        'id' => (string)$a['id'], 'nummer' => $a['nummer'], 'titel' => $a['titel'],
+        'id' => (string)$a['id'], 'nummer' => $a['nummer'], 'titel' => $a['titel'], 'kunde_id' => $a['kunde_id'] !== null ? (string)$a['kunde_id'] : null,
         'kunde_firma' => $a['kunde_firma'], 'kunde_kontakt' => $a['kunde_kontakt'], 'kunde_email' => $a['kunde_email'], 'kunde_adresse' => $a['kunde_adresse'] ?? '',
         'status' => $a['status'], 'datum' => $a['datum'], 'gueltig_bis' => $a['gueltig_bis'] ?? '', 'rabatt' => (float)$a['rabatt'],
         'einleitung' => $a['einleitung'] ?? '', 'notiz_intern' => $a['notiz_intern'] ?? '',
@@ -146,15 +152,32 @@ function insert_angebot(array $f, string $von): array
     for ($try = 0; ; $try++) {
         $nummer = next_nummer();
         try {
-            $pdo->prepare('INSERT INTO angebote (nummer, titel, kunde_firma, kunde_kontakt, kunde_email, kunde_adresse, status, datum, gueltig_bis, rabatt, einleitung, notiz_intern, erstellt_von, bearbeitet_von, created_at, updated_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, UTC_TIMESTAMP(), UTC_TIMESTAMP())')
-                ->execute([$nummer, $f['titel'], $f['kunde_firma'], $f['kunde_kontakt'], $f['kunde_email'], $f['kunde_adresse'], $f['status'], $f['datum'], $f['gueltig_bis'], $f['rabatt'], $f['einleitung'], $f['notiz_intern'], $von, $von]);
+            $pdo->prepare('INSERT INTO angebote (nummer, kunde_id, titel, kunde_firma, kunde_kontakt, kunde_email, kunde_adresse, status, datum, gueltig_bis, rabatt, einleitung, notiz_intern, erstellt_von, bearbeitet_von, created_at, updated_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, UTC_TIMESTAMP(), UTC_TIMESTAMP())')
+                ->execute([$nummer, $f['kunde_id'], $f['titel'], $f['kunde_firma'], $f['kunde_kontakt'], $f['kunde_email'], $f['kunde_adresse'], $f['status'], $f['datum'], $f['gueltig_bis'], $f['rabatt'], $f['einleitung'], $f['notiz_intern'], $von, $von]);
             return [(int)$pdo->lastInsertId(), $nummer];
         } catch (PDOException $e) {
             if ($try < 4 && (int)($e->errorInfo[1] ?? 0) === 1062) { continue; }
             throw $e;
         }
     }
+}
+
+function kunde_id_valid(mixed $v): ?int
+{
+    if (!is_numeric($v) || (int)$v <= 0) { return null; }
+    $q = db()->prepare('SELECT id FROM kunden WHERE id = ?');
+    $q->execute([(int)$v]);
+    return $q->fetchColumn() ? (int)$v : null;
+}
+
+function next_kundennummer(): string
+{
+    $start = max(10000, min(99999, (int)settings()['kunden_start']));
+    $max = (int)db()->query('SELECT MAX(CAST(nummer AS UNSIGNED)) FROM kunden')->fetchColumn();
+    $n = max($start, $max + 1);
+    if ($n > 99999) { fail('Es sind keine 5-stelligen Kundennummern mehr frei.'); }
+    return (string)$n;
 }
 
 function save_positionen(int $aid, array $positionen): void
@@ -199,6 +222,7 @@ try {
             $pos = $in['positionen'] ?? [];
             if (!is_array($pos) || count($pos) > 500) { fail('Ein Angebot kann höchstens 500 Positionen haben.'); }
             $f = [
+                'kunde_id' => kunde_id_valid($in['kunde_id'] ?? null),
                 'titel' => s($in, 'titel', 200), 'kunde_firma' => s($in, 'kunde_firma', 200), 'kunde_kontakt' => s($in, 'kunde_kontakt', 120),
                 'kunde_email' => s($in, 'kunde_email', 190), 'kunde_adresse' => s($in, 'kunde_adresse', 1000),
                 'status' => array_key_exists((string)($in['status'] ?? ''), STATUS) ? (string)$in['status'] : 'entwurf',
@@ -211,8 +235,8 @@ try {
                 $q->execute([$aid]);
                 $nummer = $q->fetchColumn();
                 if ($nummer === false) { $pdo->rollBack(); fail('Dieses Angebot wurde inzwischen gelöscht.', 404); }
-                $pdo->prepare('UPDATE angebote SET titel = ?, kunde_firma = ?, kunde_kontakt = ?, kunde_email = ?, kunde_adresse = ?, status = ?, datum = ?, gueltig_bis = ?, rabatt = ?, einleitung = ?, notiz_intern = ?, bearbeitet_von = ?, updated_at = UTC_TIMESTAMP() WHERE id = ?')
-                    ->execute([$f['titel'], $f['kunde_firma'], $f['kunde_kontakt'], $f['kunde_email'], $f['kunde_adresse'], $f['status'], $f['datum'], $f['gueltig_bis'], $f['rabatt'], $f['einleitung'], $f['notiz_intern'], $user['name'], $aid]);
+                $pdo->prepare('UPDATE angebote SET kunde_id = ?, titel = ?, kunde_firma = ?, kunde_kontakt = ?, kunde_email = ?, kunde_adresse = ?, status = ?, datum = ?, gueltig_bis = ?, rabatt = ?, einleitung = ?, notiz_intern = ?, bearbeitet_von = ?, updated_at = UTC_TIMESTAMP() WHERE id = ?')
+                    ->execute([$f['kunde_id'], $f['titel'], $f['kunde_firma'], $f['kunde_kontakt'], $f['kunde_email'], $f['kunde_adresse'], $f['status'], $f['datum'], $f['gueltig_bis'], $f['rabatt'], $f['einleitung'], $f['notiz_intern'], $user['name'], $aid]);
             } else {
                 [$aid, $nummer] = insert_angebot($f, $user['name']);
             }
@@ -225,8 +249,9 @@ try {
             $src = angebot_load((int)id($in, 'id'));
             if (!$src) { fail('Dieses Angebot gibt es nicht (mehr).', 404); }
             $tage = max(1, (int)settings()['gueltigkeit_tage']);
-            $f = array_intersect_key($src, array_flip(['titel', 'kunde_firma', 'kunde_kontakt', 'kunde_email', 'kunde_adresse', 'rabatt', 'einleitung', 'notiz_intern']));
+            $f = array_intersect_key($src, array_flip(['kunde_id', 'titel', 'kunde_firma', 'kunde_kontakt', 'kunde_email', 'kunde_adresse', 'rabatt', 'einleitung', 'notiz_intern']));
             $f['titel'] = mb_substr(trim($f['titel'] . ' (Kopie)'), 0, 200);
+            $f['kunde_id'] = kunde_id_valid($f['kunde_id']);
             $f['status'] = 'entwurf';
             $f['datum'] = gmdate('Y-m-d');
             $f['gueltig_bis'] = gmdate('Y-m-d', time() + $tage * 86400);
@@ -239,6 +264,41 @@ try {
         case 'angebot_delete':
             need($isAdmin);
             $pdo->prepare('DELETE FROM angebote WHERE id = ?')->execute([id($in, 'id')]);
+            out(['state' => state($user)]);
+
+        case 'kunde_save':
+            need($canWrite);
+            $firma = s($in, 'firma', 200);
+            if ($firma === '') { fail('Bitte den Firmennamen eintragen.'); }
+            $email = s($in, 'email', 190);
+            if ($email !== '' && !filter_var($email, FILTER_VALIDATE_EMAIL)) { fail('Die E-Mail-Adresse ist ungültig.'); }
+            $kid = id($in, 'id');
+            $nr = s($in, 'nummer', 5);
+            if ($nr !== '' && !preg_match('/^[1-9][0-9]{4}$/', $nr)) { fail('Die Kundennummer muss 5-stellig sein (10000 bis 99999).'); }
+            $vals = [$firma, s($in, 'kontakt', 120), $email, s($in, 'telefon', 60), s($in, 'adresse', 1000), s($in, 'notiz', 4000), num($in, 'rabatt', 0, 100)];
+            $pdo->beginTransaction();
+            if ($kid) {
+                $q = $pdo->prepare('SELECT nummer FROM kunden WHERE id = ? FOR UPDATE'); $q->execute([$kid]);
+                $alt = $q->fetchColumn();
+                if ($alt === false) { $pdo->rollBack(); fail('Diesen Kunden gibt es nicht mehr.', 404); }
+                $nr = $nr ?: (string)$alt;
+            } else {
+                $nr = $nr ?: next_kundennummer();
+            }
+            $dup = $pdo->prepare('SELECT firma FROM kunden WHERE nummer = ? AND id <> ?'); $dup->execute([$nr, $kid ?? 0]);
+            if (($d = $dup->fetchColumn()) !== false) { $pdo->rollBack(); fail('Die Kundennummer ' . $nr . ' hat schon «' . $d . '».'); }
+            if ($kid) {
+                $pdo->prepare('UPDATE kunden SET nummer = ?, firma = ?, kontakt = ?, email = ?, telefon = ?, adresse = ?, notiz = ?, rabatt = ?, updated_at = UTC_TIMESTAMP() WHERE id = ?')->execute([$nr, ...$vals, $kid]);
+            } else {
+                $pdo->prepare('INSERT INTO kunden (nummer, firma, kontakt, email, telefon, adresse, notiz, rabatt, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, UTC_TIMESTAMP(), UTC_TIMESTAMP())')->execute([$nr, ...$vals]);
+                $kid = (int)$pdo->lastInsertId();
+            }
+            $pdo->commit();
+            out(['kunde' => ['id' => (string)$kid, 'nummer' => $nr], 'state' => state($user)]);
+
+        case 'kunde_delete':
+            need($isAdmin);
+            $pdo->prepare('DELETE FROM kunden WHERE id = ?')->execute([id($in, 'id')]);
             out(['state' => state($user)]);
 
         case 'artikel_save':
@@ -358,6 +418,7 @@ try {
             $v['waehrung'] = $w;
             $v['mwst'] = (string)num($in, 'mwst', 0, 100);
             $v['gueltigkeit_tage'] = (string)(int)num($in, 'gueltigkeit_tage', 1, 365);
+            $v['kunden_start'] = (string)(int)num($in, 'kunden_start', 10000, 99999);
             $v['nummer_prefix'] = preg_replace('/[^A-Za-z0-9]/', '', s($in, 'nummer_prefix', 10)) ?: 'A';
             foreach ($v as $k => $x) { setting_set($k, $x); }
             out(['state' => state($user)]);

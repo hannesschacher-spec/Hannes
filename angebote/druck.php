@@ -8,7 +8,7 @@ $user = current_user();
 if (!$user) { header('Location: ./'); exit; }
 
 $id = (int)($_GET['id'] ?? 0);
-$q = db()->prepare('SELECT * FROM angebote WHERE id = ?');
+$q = db()->prepare('SELECT a.*, k.nummer AS kunde_nr FROM angebote a LEFT JOIN kunden k ON k.id = a.kunde_id WHERE a.id = ?');
 $q->execute([$id]);
 $a = $q->fetch();
 if (!$a) { http_response_code(404); echo 'Dieses Angebot gibt es nicht (mehr). <a href="./">Zurück</a>'; exit; }
@@ -69,6 +69,7 @@ $thead = '<thead><tr><th class="c-pos">Pos.</th><th class="c-nr">Artikel-Nr.</th
     </div>
     <table class="meta">
       <tr><th>Angebots-Nr.</th><td><?= h($a['nummer']) ?></td></tr>
+      <?php if ($a['kunde_nr']): ?><tr><th>Kunden-Nr.</th><td><?= h($a['kunde_nr']) ?></td></tr><?php endif; ?>
       <tr><th>Datum</th><td><?= h(date_de($a['datum'])) ?></td></tr>
       <?php if ($a['gueltig_bis']): ?><tr><th>Gültig bis</th><td><?= h(date_de($a['gueltig_bis'])) ?></td></tr><?php endif; ?>
       <tr><th>Ihr Kontakt</th><td><?= h($a['erstellt_von']) ?></td></tr>

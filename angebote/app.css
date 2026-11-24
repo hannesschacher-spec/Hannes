@@ -135,3 +135,10 @@ dialog.wide{width:min(920px,calc(100vw - 24px))}
 .table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:8px}
 .tbl{border-collapse:collapse;width:100%}
 .tbl th,.tbl td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:top;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* Kunden */
+.knr{display:inline-block;font-variant-numeric:tabular-nums;font-weight:700;font-size:.82rem;background:var(--accent-soft);color:var(--accent);border-radius:6px;padding:0 6px}
+.kunde-box{display:flex;flex-wrap:wrap;gap:8px 12px;justify-content:space-between;align-items:center;background:var(--accent-soft);border-radius:10px;padding:10px 12px}
+.kunde-box.none{background:var(--sunk)}
+.kv{display:flex;flex-direction:column;gap:1px;overflow-wrap:anywhere}
+.kv a{color:var(--accent)}

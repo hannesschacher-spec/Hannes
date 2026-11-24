@@ -77,6 +77,7 @@ $isAdmin = $user['role'] === 'admin';
   </header>
   <nav class="tabs">
     <button class="tab" data-view="angebote" aria-selected="true">Angebote</button>
+    <button class="tab" data-view="kunden" aria-selected="false">Kunden</button>
     <button class="tab" data-view="katalog" aria-selected="false">Katalog</button>
     <?php if ($isAdmin): ?><button class="tab" data-view="einstellungen" aria-selected="false">Einstellungen</button>
     <button class="tab" data-view="benutzer" aria-selected="false">Benutzer</button><?php endif; ?>
@@ -85,6 +86,8 @@ $isAdmin = $user['role'] === 'admin';
   <main>
     <section id="view-angebote"></section>
     <section id="view-editor" hidden></section>
+    <section id="view-kunden" hidden></section>
+    <section id="view-kunde" hidden></section>
     <section id="view-katalog" hidden></section>
     <section id="view-einstellungen" hidden></section>
     <section id="view-benutzer" hidden></section>
@@ -103,6 +106,33 @@ $isAdmin = $user['role'] === 'admin';
     <div id="pick-list" class="stack-s"></div>
   </div>
 </div></dialog>
+
+<dialog id="dlg-kundewahl"><div class="dlg">
+  <div class="dlg-head"><h2>Kunde auswählen</h2><button type="button" class="btn ghost" data-close>Schliessen</button></div>
+  <div class="dlg-body">
+    <div class="toolbar"><input type="search" id="kw-q" placeholder="Kundennummer oder Firma" aria-label="Kunde suchen">
+      <?php if ($user['role'] !== 'lesen'): ?><button type="button" class="btn" data-action="new-kunde-wahl">+ Neuer Kunde</button><?php endif; ?></div>
+    <div id="kw-list" class="stack-s"></div>
+  </div>
+</div></dialog>
+
+<dialog id="dlg-kunde"><form class="dlg" id="form-kunde" autocomplete="off">
+  <div class="dlg-head"><h2 id="kunde-title">Neuer Kunde</h2><button type="button" class="btn ghost" data-close>Schliessen</button></div>
+  <div class="dlg-body">
+    <div class="grid2">
+      <div class="field"><label for="k-nummer">Kundennummer (5-stellig)</label><input id="k-nummer" name="nummer" inputmode="numeric" maxlength="5" pattern="[1-9][0-9]{4}"></div>
+      <div class="field"><label for="k-rabatt">Standardrabatt %</label><input id="k-rabatt" name="rabatt" inputmode="decimal" placeholder="0"></div>
+      <div class="field span2"><label for="k-firma">Firma</label><input id="k-firma" name="firma" required maxlength="200"></div>
+      <div class="field"><label for="k-kontakt">Ansprechperson</label><input id="k-kontakt" name="kontakt" maxlength="120"></div>
+      <div class="field"><label for="k-telefon">Telefon</label><input id="k-telefon" name="telefon" type="tel" maxlength="60"></div>
+      <div class="field span2"><label for="k-email">E-Mail</label><input id="k-email" name="email" type="email" maxlength="190"></div>
+      <div class="field span2"><label for="k-adresse">Anschrift</label><textarea id="k-adresse" name="adresse" rows="3" maxlength="1000" placeholder="Strasse&#10;PLZ Ort&#10;Land"></textarea></div>
+      <div class="field span2"><label for="k-notiz">Interne Notiz</label><textarea id="k-notiz" name="notiz" rows="3" maxlength="4000" placeholder="z. B. Branche, vorhandene Maschinen, Besonderheiten"></textarea></div>
+    </div>
+    <p class="small muted">Leer lassen = Kundennummer wird automatisch vergeben.</p>
+  </div>
+  <div class="dlg-foot"><button type="button" class="btn" data-close>Abbrechen</button><button class="btn primary" type="submit">Speichern</button></div>
+</form></dialog>
 
 <dialog id="dlg-artikel" class="wide"><form class="dlg" id="form-artikel" autocomplete="off">
   <div class="dlg-head"><h2 id="artikel-title">Artikel</h2><button type="button" class="btn ghost" data-close>Schliessen</button></div>
